@@ -41,7 +41,15 @@
         "Dependencies in platform source sets that should be in commonMain",
         "Missing KMP targets (especially iosSimulatorArm64 for simulator testing)",
         "Hardcoded dependency versions instead of version catalog references",
-        "Unused or redundant dependencies across source sets"
+        "Unused or redundant dependencies across source sets",
+        "Deprecated com.android.library plugin in KMP modules (migrate to com.android.kotlin.multiplatform.library)",
+        "allprojects/subprojects blocks that prevent Gradle configuration-on-demand",
+        "Redundant java plugin alongside kotlin(jvm/multiplatform)",
+        "Deprecated withJava() in KMP JVM targets (Gradle 8.7+)",
+        "kapt usage that should be migrated to KSP",
+        "Duplicate library entries in version catalog",
+        "AGP version below 9.0 needing KMP migration planning",
+        "buildSrc directory instead of included build (build-logic)"
       ],
       "skip": [
         "Test-only dependencies in test source sets",
