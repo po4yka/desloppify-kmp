@@ -13,7 +13,6 @@ from dataclasses import dataclass
 DISPLAY_ORDER = [
     "logs",
     "unused",
-    "exports",
     "deprecated",
     "structural",
     "props",
@@ -26,10 +25,8 @@ DISPLAY_ORDER = [
     "patterns",
     "naming",
     "smells",
-    "react",
     "dupes",
     "stale_exclude",
-    "dict_keys",
     "flat_dirs",
     "signature",
     "global_mutable_config",
@@ -74,20 +71,12 @@ DETECTORS: dict[str, DetectorMeta] = {
         "remove debug logs",
         fixers=("debug-logs",),
     ),
-    "exports": DetectorMeta(
-        "exports",
-        "exports",
-        "Code quality",
-        "manual_fix",
-        "run `knip --fix` to remove dead exports",
-    ),
     "smells": DetectorMeta(
         "smells",
         "smells",
         "Code quality",
         "auto_fix",
-        "fix code smells — dead useEffect, empty if chains",
-        fixers=("dead-useeffect", "empty-if-chain"),
+        "fix code smells — empty branches, dead code patterns",
         needs_judgment=True,
     ),
     # ── Reorganize (move tool) ────────────────────────────
@@ -179,14 +168,6 @@ DETECTORS: dict[str, DetectorMeta] = {
         "split bloated components, extract sub-components",
         needs_judgment=True,
     ),
-    "react": DetectorMeta(
-        "react",
-        "react",
-        "Code quality",
-        "refactor",
-        "refactor React antipatterns (state sync, provider nesting, hook bloat)",
-        needs_judgment=True,
-    ),
     "dupes": DetectorMeta(
         "dupes",
         "dupes",
@@ -201,15 +182,6 @@ DETECTORS: dict[str, DetectorMeta] = {
         "Code quality",
         "refactor",
         "align to single pattern across the codebase",
-        needs_judgment=True,
-    ),
-    "dict_keys": DetectorMeta(
-        "dict_keys",
-        "dict keys",
-        "Code quality",
-        "refactor",
-        "fix dict key mismatches — dead writes are likely dead code, "
-        "schema drift suggests a typo or missed rename",
         needs_judgment=True,
     ),
     "test_coverage": DetectorMeta(

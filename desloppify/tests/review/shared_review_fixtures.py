@@ -40,7 +40,7 @@ def state_with_findings():
             "last_seen": "2026-01-01T00:00:00+00:00",
             "resolved_at": None,
             "reopen_count": 0,
-            "lang": "typescript",
+            "lang": "kotlin",
         },
         "smells::src/utils.ts::eval_exec": {
             "id": "smells::src/utils.ts::eval_exec",
@@ -56,7 +56,7 @@ def state_with_findings():
             "last_seen": "2026-01-01T00:00:00+00:00",
             "resolved_at": None,
             "reopen_count": 0,
-            "lang": "typescript",
+            "lang": "kotlin",
         },
     }
     return state
@@ -66,7 +66,7 @@ def state_with_findings():
 def mock_lang():
     """Create a mock LangConfig with minimal interface."""
     lang = MagicMock()
-    lang.name = "typescript"
+    lang.name = "kotlin"
     lang.file_finder = MagicMock(
         return_value=["src/foo.ts", "src/bar.ts", "src/utils.ts"]
     )

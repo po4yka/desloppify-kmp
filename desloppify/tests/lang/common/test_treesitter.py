@@ -592,23 +592,13 @@ class TestGracefulDegradation:
 
 
 class TestGenericLangIntegration:
-    def test_go_is_full_plugin(self):
-        import desloppify.languages.go  # noqa: F401
+    def test_kotlin_is_registered(self):
+        import desloppify.languages.kotlin  # noqa: F401
         from desloppify.languages._framework.resolution import get_lang
 
-        lang = get_lang("go")
-        assert lang.extract_functions is not None
-        assert lang.integration_depth == "full"
-
-    def test_go_phases_include_structural(self):
-        import desloppify.languages.go  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("go")
-        phase_labels = [p.label for p in lang.phases]
-        assert "Structural analysis" in phase_labels
-        assert "Test coverage" in phase_labels
-        assert "Security" in phase_labels
+        lang = get_lang("kotlin")
+        assert lang.name == "kotlin"
+        assert ".kt" in lang.extensions
 
 
 
@@ -1388,39 +1378,19 @@ let add a b =
 
 
 class TestNewLanguageIntegration:
-    def test_javascript_registered(self):
-        import desloppify.languages.javascript  # noqa: F401
-        from desloppify.languages._framework.generic import (
-            empty_dep_graph,
-            noop_extract_functions,
-        )
+    def test_kotlin_registered(self):
+        import desloppify.languages.kotlin  # noqa: F401
         from desloppify.languages._framework.resolution import get_lang
 
-        lang = get_lang("javascript")
-        assert lang.extract_functions is not noop_extract_functions
-        assert lang.build_dep_graph is not empty_dep_graph
-        assert ".js" in lang.extensions
+        lang = get_lang("kotlin")
+        assert ".kt" in lang.extensions
 
-    def test_erlang_registered(self):
-        import desloppify.languages.erlang  # noqa: F401
+    def test_swift_registered(self):
+        import desloppify.languages.swift  # noqa: F401
         from desloppify.languages._framework.resolution import get_lang
 
-        lang = get_lang("erlang")
-        assert ".erl" in lang.extensions
-
-    def test_ocaml_registered(self):
-        import desloppify.languages.ocaml  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("ocaml")
-        assert ".ml" in lang.extensions
-
-    def test_fsharp_registered(self):
-        import desloppify.languages.fsharp  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("fsharp")
-        assert ".fs" in lang.extensions
+        lang = get_lang("swift")
+        assert ".swift" in lang.extensions
 
 
 # ── Cyclomatic complexity tests ───────────────────────────────
@@ -1842,45 +1812,10 @@ class TestSignatureVariance:
 
 
 class TestPhaseWiring:
-    def test_go_has_ast_smells_phase(self):
-        import desloppify.languages.go  # noqa: F401
+    def test_kotlin_has_phases(self):
+        import desloppify.languages.kotlin  # noqa: F401
         from desloppify.languages._framework.resolution import get_lang
 
-        lang = get_lang("go")
+        lang = get_lang("kotlin")
         labels = [p.label for p in lang.phases]
-        assert "AST smells" in labels
-
-    def test_go_has_cohesion_phase(self):
-        import desloppify.languages.go  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("go")
-        labels = [p.label for p in lang.phases]
-        assert "Responsibility cohesion" in labels
-
-    def test_go_has_signature_phase(self):
-        import desloppify.languages.go  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("go")
-        labels = [p.label for p in lang.phases]
-        assert "Signature analysis" in labels
-
-    def test_go_has_unused_imports_phase(self):
-        import desloppify.languages.go  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("go")
-        labels = [p.label for p in lang.phases]
-        assert "Unused imports" in labels
-
-    def test_bash_has_no_unused_imports(self):
-        """Bash has import_query but it resolves source commands.
-        Check unused imports phase IS present for bash."""
-        import desloppify.languages.bash  # noqa: F401
-        from desloppify.languages._framework.resolution import get_lang
-
-        lang = get_lang("bash")
-        labels = [p.label for p in lang.phases]
-        # Bash has an import_query, so it should have unused imports.
-        assert "Unused imports" in labels
+        assert len(labels) > 0

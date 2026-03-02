@@ -197,9 +197,8 @@ Outside these zones, use static imports.
 
 #### Optional Dependencies (Coverage)
 
-- `pip install "desloppify[python-security]"` installs `bandit` for Python-specific security checks.
 - `pip install "desloppify[treesitter]"` installs tree-sitter language-pack for deeper AST analysis in generic plugins.
-- `pip install "desloppify[full]"` installs both.
+- `pip install "desloppify[full]"` installs all optional dependencies.
 
 If optional tools are missing, scan warns at start and end, and marks score confidence as reduced for affected detectors.
 

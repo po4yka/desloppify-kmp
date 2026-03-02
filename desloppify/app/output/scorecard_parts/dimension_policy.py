@@ -9,9 +9,7 @@ _DEFAULT_ELEGANCE_COMPONENTS: tuple[str, ...] = (
     "Low elegance",
 )
 _ELEGANCE_COMPONENTS_BY_LANG: dict[str, tuple[str, ...]] = {
-    "python": _DEFAULT_ELEGANCE_COMPONENTS,
-    "typescript": _DEFAULT_ELEGANCE_COMPONENTS,
-    "csharp": _DEFAULT_ELEGANCE_COMPONENTS,
+    "kotlin": _DEFAULT_ELEGANCE_COMPONENTS,
 }
 
 # Display ordering preferences for subjective dimensions on the scorecard.
@@ -39,7 +37,7 @@ _SUBJECTIVE_SCORECARD_ORDER_DEFAULT: tuple[str, ...] = (
     "Contracts",
 )
 _SUBJECTIVE_SCORECARD_ORDER_BY_LANG: dict[str, tuple[str, ...]] = {
-    "python": (
+    "kotlin": (
         "Elegance",
         "Abstraction fit",
         "Error consistency",
@@ -47,33 +45,6 @@ _SUBJECTIVE_SCORECARD_ORDER_BY_LANG: dict[str, tuple[str, ...]] = {
         "Cross-module arch",
         "Convention drift",
         "Dep health",
-        "Test strategy",
-        "Structure nav",
-        "Design coherence",
-    ),
-    "typescript": (
-        "Elegance",
-        "Abstraction fit",
-        "Error consistency",
-        "AI generated debt",
-        "Cross-module arch",
-        "Convention drift",
-        "API coherence",
-        "Auth consistency",
-        "Stale migration",
-        "Structure nav",
-        "Design coherence",
-    ),
-    "csharp": (
-        "Elegance",
-        "Abstraction fit",
-        "Error consistency",
-        "AI generated debt",
-        "Cross-module arch",
-        "Convention drift",
-        "API coherence",
-        "Auth consistency",
-        "Stale migration",
         "Structure nav",
         "Design coherence",
     ),
@@ -96,9 +67,7 @@ def _compose_scorecard_dimensions(subjective_order: tuple[str, ...]) -> tuple[st
 
 
 _SCORECARD_DIMENSIONS_BY_LANG: dict[str, tuple[str, ...]] = {
-    "python": _compose_scorecard_dimensions(_SUBJECTIVE_SCORECARD_ORDER_BY_LANG["python"]),
-    "typescript": _compose_scorecard_dimensions(_SUBJECTIVE_SCORECARD_ORDER_BY_LANG["typescript"]),
-    "csharp": _compose_scorecard_dimensions(_SUBJECTIVE_SCORECARD_ORDER_BY_LANG["csharp"]),
+    "kotlin": _compose_scorecard_dimensions(_SUBJECTIVE_SCORECARD_ORDER_BY_LANG["kotlin"]),
 }
 
 

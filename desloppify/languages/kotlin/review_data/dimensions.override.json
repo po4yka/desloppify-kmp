@@ -1,0 +1,84 @@
+{
+  "default_dimensions_append": [
+    "kmp_platform_boundary",
+    "compose_state_management"
+  ],
+  "dimension_prompts": {
+    "kmp_platform_boundary": {
+      "description": "Platform API leakage across KMP source set boundaries",
+      "look_for": [
+        "java.*, android.*, dalvik.* imports in commonMain source sets",
+        "Platform annotations (@HiltViewModel, @Inject) in shared code",
+        "JVM-only APIs (Thread, String.format, System.currentTimeMillis, java.io.File) in common code",
+        "Missing expect/actual boundaries for platform-specific functionality",
+        "Direct platform SDK calls that should go through expect/actual declarations"
+      ],
+      "skip": [
+        "Platform source sets (androidMain, iosMain) where platform APIs are expected",
+        "Build configuration files (build.gradle.kts)",
+        "Test source sets that target a specific platform"
+      ]
+    },
+    "compose_state_management": {
+      "description": "Compose Multiplatform state management correctness",
+      "look_for": [
+        "mutableStateOf() outside remember{} blocks",
+        "ViewModel passed as @Composable function parameter instead of hoisted",
+        "Side effects outside LaunchedEffect/SideEffect/DisposableEffect",
+        "@Composable functions with excessive parameters (>8)",
+        "LazyColumn/LazyRow items() calls without key parameter"
+      ],
+      "skip": [
+        "Preview functions annotated with @Preview",
+        "Test composables in test source sets",
+        "Top-level navigation composables where parameter count is inherently high"
+      ]
+    },
+    "dependency_health": {
+      "description": "Review Gradle dependency management. Check version catalog (libs.versions.toml) for Kotlin/Compose version compatibility. Look for dependencies in platform source sets that should be in commonMain. Verify build.gradle.kts has all required KMP targets (especially iosSimulatorArm64 for simulator testing).",
+      "look_for": [
+        "Kotlin/Compose version incompatibilities in version catalog",
+        "Dependencies in platform source sets that should be in commonMain",
+        "Missing KMP targets (especially iosSimulatorArm64 for simulator testing)",
+        "Hardcoded dependency versions instead of version catalog references",
+        "Unused or redundant dependencies across source sets"
+      ],
+      "skip": [
+        "Test-only dependencies in test source sets",
+        "Platform-specific dependencies that are inherently non-shared",
+        "Build plugin dependencies"
+      ]
+    },
+    "cross_module_architecture": {
+      "description": "Evaluate source set DAG adherence. commonMain should contain shared abstractions. Platform source sets (androidMain, iosMain) should only contain platform-specific implementations. Check expect/actual completeness across configured targets. Verify no circular dependencies between modules.",
+      "look_for": [
+        "Shared abstractions leaking into platform source sets",
+        "Platform implementations in commonMain",
+        "Incomplete expect/actual declarations across configured targets",
+        "Circular dependencies between modules",
+        "God modules mixing persistence, orchestration, and UI concerns"
+      ],
+      "skip": [
+        "Single-module projects where source set separation is the boundary",
+        "Build configuration modules",
+        "Generated code in build directories"
+      ]
+    },
+    "abstraction_fitness": {
+      "description": "Review expect/actual design. Check for expect class with body that could be simplified to expect fun + interface. Verify that platform implementations are minimal and delegate to shared logic where possible. Look for over-abstraction in commonMain.",
+      "look_for": [
+        "expect class with body that could be simplified to expect fun + interface",
+        "Platform implementations that duplicate shared logic",
+        "Over-abstraction in commonMain with pass-through wrappers",
+        "Missing abstractions where platform code is duplicated",
+        "Leaky abstractions where callers bypass expect/actual boundaries"
+      ],
+      "skip": [
+        "Framework-required abstractions (dependency injection, etc.)",
+        "Simple expect/actual pairs for platform primitives",
+        "Adapters that intentionally isolate external API volatility"
+      ]
+    }
+  },
+  "system_prompt_append": "When reviewing Kotlin Multiplatform code, pay special attention to source set boundaries (commonMain vs platform source sets), expect/actual declaration completeness, and Compose Multiplatform state management patterns."
+}

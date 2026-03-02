@@ -72,7 +72,7 @@ def empty_state():
 @pytest.fixture
 def mock_lang():
     lang = MagicMock()
-    lang.name = "typescript"
+    lang.name = "kotlin"
     lang.zone_map = None
     lang.dep_graph = None
     lang.file_finder = MagicMock(return_value=[])
@@ -240,8 +240,8 @@ class TestLowValueNames:
     def test_types_file(self):
         assert LOW_VALUE_NAMES.search("src/types.ts")
 
-    def test_dts_file(self):
-        assert is_low_value_file("src/foo.d.ts", "typescript")
+    def test_buildconfig_file(self):
+        assert is_low_value_file("src/BuildConfig.kt", "kotlin")
 
     def test_normal_file(self):
         assert not LOW_VALUE_NAMES.search("src/app.ts")
@@ -453,7 +453,7 @@ class TestImportReviewFindings:
                 "confidence": "medium",
             }
         ]
-        diff = import_review_findings(_as_review_payload(data), empty_state, "typescript")
+        diff = import_review_findings(_as_review_payload(data), empty_state, "kotlin")
         assert diff.get("skipped", 0) == 0
         # Finding should be in state
         assert any(
@@ -463,7 +463,7 @@ class TestImportReviewFindings:
 
     def test_skips_missing_fields(self, empty_state):
         data = [{"file": "src/foo.ts"}]  # Missing dimension, identifier, etc.
-        diff = import_review_findings(_as_review_payload(data), empty_state, "typescript")
+        diff = import_review_findings(_as_review_payload(data), empty_state, "kotlin")
         assert diff.get("skipped", 0) == 1
 
     def test_skips_invalid_dimension(self, empty_state):
@@ -476,7 +476,7 @@ class TestImportReviewFindings:
                 "confidence": "high",
             }
         ]
-        diff = import_review_findings(_as_review_payload(data), empty_state, "typescript")
+        diff = import_review_findings(_as_review_payload(data), empty_state, "kotlin")
         assert diff.get("skipped", 0) == 1
 
     def test_normalizes_invalid_confidence(self, empty_state):
@@ -489,7 +489,7 @@ class TestImportReviewFindings:
                 "confidence": "INVALID",
             }
         ]
-        _ = import_review_findings(_as_review_payload(data), empty_state, "typescript")
+        _ = import_review_findings(_as_review_payload(data), empty_state, "kotlin")
         findings = list(empty_state.get("findings", {}).values())
         review_findings = [f for f in findings if f.get("detector") == "review"]
         assert len(review_findings) == 1
@@ -506,7 +506,7 @@ class TestImportReviewFindings:
         diff = import_review_findings(
             {"findings": [], "reviewed_files": ["src/reviewed.ts"]},
             empty_state,
-            "typescript",
+            "kotlin",
             project_root=tmp_path,
         )
 
@@ -526,7 +526,7 @@ class TestImportReviewFindings:
             summary="old finding",
             detail={"dimension": "naming_quality"},
         )
-        old["lang"] = "typescript"
+        old["lang"] = "kotlin"
         empty_state["findings"][old["id"]] = old
         # Import new findings for same file, but different finding
         data = [
@@ -538,7 +538,7 @@ class TestImportReviewFindings:
                 "confidence": "high",
             }
         ]
-        _ = import_review_findings(_as_review_payload(data), empty_state, "typescript")
+        _ = import_review_findings(_as_review_payload(data), empty_state, "kotlin")
         # Old finding should be auto-resolved
         assert empty_state["findings"][old["id"]]["status"] == "auto_resolved"
 
@@ -556,14 +556,14 @@ class TestImportHolisticFindings:
                 "suggestion": "Split by domain",
             }
         ]
-        import_holistic_findings(_as_review_payload(data), empty_state, "typescript")
+        import_holistic_findings(_as_review_payload(data), empty_state, "kotlin")
         findings = list(empty_state.get("findings", {}).values())
         holistic = [f for f in findings if f.get("detail", {}).get("holistic")]
         assert len(holistic) == 1
 
     def test_skips_invalid(self, empty_state):
         data = [{"summary": "missing dimension"}]
-        diff = import_holistic_findings(_as_review_payload(data), empty_state, "typescript")
+        diff = import_holistic_findings(_as_review_payload(data), empty_state, "kotlin")
         assert diff.get("skipped", 0) == 1
 
 
@@ -593,11 +593,11 @@ class TestUpdateHolisticReviewCache:
         assert rc["holistic"]["reviewed_at"] == "2026-02-01"
 
     def test_uses_codebase_metrics_total_files_when_present(self, empty_state):
-        empty_state["codebase_metrics"] = {"python": {"total_files": 267}}
+        empty_state["codebase_metrics"] = {"kotlin": {"total_files": 267}}
         update_holistic_review_cache(
             empty_state,
             [],
-            lang_name="python",
+            lang_name="kotlin",
             utc_now_fn=lambda: "2026-02-01",
         )
 
@@ -605,11 +605,11 @@ class TestUpdateHolisticReviewCache:
         assert rc["holistic"]["file_count_at_review"] == 267
 
     def test_review_scope_total_files_overrides_metric_fallback(self, empty_state):
-        empty_state["codebase_metrics"] = {"python": {"total_files": 267}}
+        empty_state["codebase_metrics"] = {"kotlin": {"total_files": 267}}
         update_holistic_review_cache(
             empty_state,
             [],
-            lang_name="python",
+            lang_name="kotlin",
             review_scope={
                 "total_files": 999,
                 "reviewed_files_count": 42,
@@ -630,14 +630,14 @@ class TestUpdateHolisticReviewCache:
 class TestEmptyPlan:
     def test_contains_score(self, empty_state):
         empty_state["objective_score"] = 88.5
-        result = _empty_plan(empty_state, "typescript")
+        result = _empty_plan(empty_state, "kotlin")
         assert "88.5" in result
         assert "No open holistic findings" in result
 
 
 class TestGenerateRemediationPlan:
     def test_empty_findings(self, empty_state):
-        result = generate_remediation_plan(empty_state, "typescript")
+        result = generate_remediation_plan(empty_state, "kotlin")
         assert "No open holistic findings" in result
 
     def test_with_findings(self, empty_state):
@@ -660,8 +660,8 @@ class TestGenerateRemediationPlan:
         empty_state["findings"][f["id"]] = f
         empty_state["objective_score"] = 85.0
         empty_state["strict_score"] = 84.0
-        empty_state["potentials"] = {"typescript": {"review": 50}}
-        result = generate_remediation_plan(empty_state, "typescript")
+        empty_state["potentials"] = {"kotlin": {"review": 50}}
+        result = generate_remediation_plan(empty_state, "kotlin")
         assert "God module detected" in result
         assert "Priority 1" in result
         assert "Evidence" in result
@@ -670,5 +670,5 @@ class TestGenerateRemediationPlan:
     def test_writes_to_file(self, empty_state, tmp_path):
         out = tmp_path / "plan.md"
         with patch("desloppify.intelligence.review._prepare.remediation_engine.safe_write_text") as mock_write:
-            generate_remediation_plan(empty_state, "python", output_path=out)
+            generate_remediation_plan(empty_state, "kotlin", output_path=out)
             mock_write.assert_called_once()

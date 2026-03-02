@@ -4,13 +4,11 @@ SKIP_ALL_DETECTORS = frozenset(
     {
         "unused",
         "logs",
-        "exports",
         "deprecated",
         "structural",
         "boilerplate_duplication",
         "props",
         "smells",
-        "react",
         "dupes",
         "single_use",
         "orphaned",
@@ -20,7 +18,6 @@ SKIP_ALL_DETECTORS = frozenset(
         "patterns",
         "cycles",
         "flat_dirs",
-        "dict_keys",
         "test_coverage",
         "security",
     }
@@ -33,7 +30,6 @@ TEST_SKIP_DETECTORS = {
     "orphaned",
     "coupling",
     "facade",
-    "dict_keys",
     "test_coverage",
     "security",
     "private_imports",
@@ -49,7 +45,6 @@ CONFIG_SKIP_DETECTORS = {
     "orphaned",
     "coupling",
     "facade",
-    "dict_keys",
     "test_coverage",
     "security",
 }

@@ -40,12 +40,9 @@ DETECTOR_SCORING_POLICIES: dict[str, DetectorScoringPolicy] = {
     # Code quality
     "unused": DetectorScoringPolicy("unused", "Code quality", 3),
     "logs": DetectorScoringPolicy("logs", "Code quality", 3),
-    "exports": DetectorScoringPolicy("exports", "Code quality", 3),
     "deprecated": DetectorScoringPolicy("deprecated", "Code quality", 3),
     "props": DetectorScoringPolicy("props", "Code quality", 3),
     "smells": DetectorScoringPolicy("smells", "Code quality", 3, file_based=True),
-    "react": DetectorScoringPolicy("react", "Code quality", 3),
-    "dict_keys": DetectorScoringPolicy("dict_keys", "Code quality", 3, file_based=True),
     "global_mutable_config": DetectorScoringPolicy(
         "global_mutable_config", "Code quality", 3
     ),

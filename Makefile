@@ -5,7 +5,6 @@
 	typecheck \
 	arch \
 	ci-contracts \
-	integration-roslyn \
 	tests \
 	tests-full \
 	package-smoke \
@@ -42,9 +41,6 @@ arch: install-ci-tools
 ci-contracts: install-ci-tools
 	pytest -q desloppify/tests/ci/test_ci_contracts.py
 
-integration-roslyn: install-ci-tools
-	pytest -q desloppify/tests/lang/csharp/test_csharp_deps.py -k "roslyn"
-
 tests: install-ci-tools
 	pytest -q $(PYTEST_XML_FLAG)
 
@@ -60,7 +56,7 @@ package-smoke: install-ci-tools
 		python -m pip install --upgrade pip && \
 		WHEEL=$$(ls -t dist/desloppify-*.whl | head -n 1) && \
 		python -m pip install "$$WHEEL[full]" && \
-		python -c "import importlib.metadata as m,sys; extras=set(m.metadata('desloppify').get_all('Provides-Extra') or []); required={'full','treesitter','python-security','scorecard'}; missing=required-extras; print('missing extras metadata:', sorted(missing)) if missing else None; sys.exit(1 if missing else 0)" && \
+		python -c "import importlib.metadata as m,sys; extras=set(m.metadata('desloppify').get_all('Provides-Extra') or []); required={'full','treesitter','scorecard'}; missing=required-extras; print('missing extras metadata:', sorted(missing)) if missing else None; sys.exit(1 if missing else 0)" && \
 		desloppify --help > /dev/null
 	rm -rf .pkg-smoke
 

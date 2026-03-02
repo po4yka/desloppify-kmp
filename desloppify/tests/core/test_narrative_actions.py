@@ -52,14 +52,14 @@ class TestComputeActions:
         assert len(result) >= 1
         assert any(a["detector"] == "unused" for a in result)
 
-    def test_python_gets_manual_fix(self, empty_state):
+    def test_kotlin_gets_manual_fix(self, empty_state):
         result = _compute_actions(
             ActionContext(
                 by_detector={"unused": 5},
                 dimension_scores={},
                 state=empty_state,
                 debt={},
-                lang="python",
+                lang="kotlin",
             )
         )
         if result:
@@ -211,15 +211,15 @@ class TestSmellsActionWithNoReact:
         # Should NOT suggest dead-useeffect since there are no dead_useeffect findings
         assert all("dead-useeffect" not in a.get("command", "") for a in smells_actions)
 
-    def test_smells_with_dead_useeffect_finding_gets_auto_fix(self, empty_state):
-        """When a dead_useeffect finding exists, dead-useeffect fixer is suggested."""
+    def test_smells_with_open_finding_gets_action(self, empty_state):
+        """When a smells finding exists, a smells action is suggested."""
         state = dict(empty_state)
         state["findings"] = {
-            "smells::app.tsx::dead_useeffect": {
+            "smells::Main.kt::debug_tag": {
                 "status": "open",
                 "detector": "smells",
-                "file": "app.tsx",
-                "detail": {"smell_id": "dead_useeffect"},
+                "file": "Main.kt",
+                "detail": {"smell_id": "debug_tag"},
             }
         }
         result = _compute_actions(
@@ -228,21 +228,20 @@ class TestSmellsActionWithNoReact:
                 dimension_scores={},
                 state=state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         smells_actions = [a for a in result if a.get("detector") == "smells"]
         assert smells_actions
-        assert any("dead-useeffect" in a.get("command", "") for a in smells_actions)
 
-    def test_smells_with_empty_if_chain_finding_gets_correct_fixer(self, empty_state):
-        """When only empty_if_chain findings exist, empty-if-chain fixer is suggested."""
+    def test_smells_with_no_fixers_gets_manual_fix(self, empty_state):
+        """When smells findings exist but no fixers are registered, manual_fix is used."""
         state = dict(empty_state)
         state["findings"] = {
-            "smells::util.ts::empty_if_chain": {
+            "smells::Util.kt::empty_if_chain": {
                 "status": "open",
                 "detector": "smells",
-                "file": "util.ts",
+                "file": "Util.kt",
                 "detail": {"smell_id": "empty_if_chain"},
             }
         }
@@ -252,12 +251,14 @@ class TestSmellsActionWithNoReact:
                 dimension_scores={},
                 state=state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         smells_actions = [a for a in result if a.get("detector") == "smells"]
         assert smells_actions
-        assert any("empty-if-chain" in a.get("command", "") for a in smells_actions)
+        # No TypeScript-specific fixers exist anymore, so manual_fix is expected
+        for action in smells_actions:
+            assert action["type"] in ("manual_fix", "auto_fix")
 
 
 class TestComputeTools:

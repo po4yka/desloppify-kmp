@@ -44,39 +44,8 @@ import desloppify.intelligence.review.dimensions.holistic as review_dimensions_h
 import desloppify.intelligence.review.dimensions.validation as review_dimensions_validation
 import desloppify.languages as lang_pkg
 import desloppify.languages._framework.discovery as lang_discovery
-import desloppify.languages.csharp.extractors as csharp_extractors
-import desloppify.languages.csharp.extractors_classes as csharp_extractors_classes
-import desloppify.languages.dart.commands as dart_commands
-import desloppify.languages.dart.extractors as dart_extractors
-import desloppify.languages.dart.move as dart_move
-import desloppify.languages.dart.phases as dart_phases
-import desloppify.languages.dart.review as dart_review
-import desloppify.languages.gdscript.commands as gdscript_commands
-import desloppify.languages.gdscript.extractors as gdscript_extractors
-import desloppify.languages.gdscript.move as gdscript_move
-import desloppify.languages.gdscript.phases as gdscript_phases
-import desloppify.languages.gdscript.review as gdscript_review
-import desloppify.languages.python.detectors.private_imports as private_imports
-import desloppify.languages.python.detectors.smells_ast as smells_ast
-import desloppify.languages.python.detectors.smells_ast._shared as smells_ast_shared
-import desloppify.languages.python.detectors.smells_ast._source_detectors as smells_ast_source_detectors
-import desloppify.languages.python.detectors.smells_ast._tree_context_detectors as smells_ast_tree_context_detectors
-import desloppify.languages.python.detectors.smells_ast._tree_quality_detectors as smells_ast_tree_quality_detectors
-import desloppify.languages.python.detectors.smells_ast._tree_quality_detectors_types as smells_ast_tree_quality_detectors_types
-import desloppify.languages.python.detectors.smells_ast._tree_safety_detectors as smells_ast_tree_safety_detectors
-import desloppify.languages.python.detectors.smells_ast._tree_safety_detectors_runtime as smells_ast_tree_safety_detectors_runtime
-import desloppify.languages.python.extractors_classes as py_extractors_classes
-import desloppify.languages.python.extractors_shared as py_extractors_shared
-import desloppify.languages.python.phases as py_phases
-import desloppify.languages.python.phases_quality as py_phases_quality
-import desloppify.languages.typescript.detectors._smell_effects as ts_smell_effects
-import desloppify.languages.typescript.detectors.deps_runtime as ts_deps_runtime
-import desloppify.languages.typescript.extractors_components as ts_extractors_components
 from desloppify.intelligence.review import prepare_batches as review_prepare_batches
 from desloppify.languages import resolution as lang_resolution
-from desloppify.languages.csharp import move as csharp_move
-from desloppify.languages.csharp import review as csharp_review
-from desloppify.languages.typescript import review as ts_review
 
 
 def _assert_all_callables(*targets) -> None:
@@ -148,8 +117,7 @@ def test_smoke_commands():
 
 
 def test_smoke_engine():
-    """Engine modules: state internals, python detectors."""
-    # state internals
+    """Engine modules: state internals."""
     _assert_all_callables(
         persistence.load_state,
         persistence.save_state,
@@ -160,36 +128,9 @@ def test_smoke_engine():
         noise.resolve_finding_noise_settings,
     )
 
-    # python detector modules
-    _assert_all_callables(
-        private_imports.detect_private_imports,
-        private_imports._is_dunder,
-        smells_ast.detect_ast_smells,
-        smells_ast_shared._looks_like_path_var,
-        smells_ast_source_detectors._detect_duplicate_constants,
-        smells_ast_source_detectors._detect_vestigial_parameter,
-        smells_ast_tree_context_detectors._detect_hardcoded_path_sep,
-        smells_ast_tree_quality_detectors._detect_optional_param_sprawl,
-        smells_ast_tree_quality_detectors_types._detect_optional_param_sprawl,
-        smells_ast_tree_safety_detectors._detect_silent_except,
-        smells_ast_tree_safety_detectors_runtime._detect_silent_except,
-        py_extractors_classes.extract_py_classes,
-        py_extractors_shared.extract_py_params,
-        py_phases_quality.phase_smells,
-        py_phases_quality.phase_dict_keys,
-        ts_smell_effects.detect_swallowed_errors,
-        ts_deps_runtime.build_dynamic_import_targets,
-        ts_extractors_components.extract_ts_components,
-    )
-    assert private_imports._is_dunder("__all__")
-    assert isinstance(py_phases.PY_ENTRY_PATTERNS, list)
-    assert isinstance(py_phases.PY_COMPLEXITY_SIGNALS, list)
-    assert isinstance(py_phases.PY_GOD_RULES, list)
-
 
 def test_smoke_lang_plugins():
-    """Language plugin modules: package, discovery, resolution, per-lang."""
-    # lang package/discovery/resolution
+    """Language plugin modules: package, discovery, resolution."""
     _assert_all_callables(
         lang_pkg.register_lang,
         lang_pkg.available_langs,
@@ -198,58 +139,7 @@ def test_smoke_lang_plugins():
         lang_resolution.make_lang_config,
         lang_resolution.get_lang,
         lang_resolution.auto_detect_lang,
-        csharp_extractors.find_csharp_files,
-        csharp_extractors.extract_csharp_functions,
-        csharp_extractors_classes.extract_csharp_classes,
-        dart_commands.get_detect_commands,
-        dart_extractors.find_dart_files,
-        dart_extractors.extract_functions,
-        dart_review.module_patterns,
-        dart_review.api_surface,
-        gdscript_commands.get_detect_commands,
-        gdscript_extractors.find_gdscript_files,
-        gdscript_extractors.extract_functions,
-        gdscript_review.module_patterns,
-        gdscript_review.api_surface,
     )
-
-    # csharp
-    assert isinstance(csharp_move.VERIFY_HINT, str)
-    assert "dotnet build" in csharp_move.VERIFY_HINT
-    assert csharp_move.find_replacements("a.cs", "b.cs", {}) == {}
-    assert csharp_move.find_self_replacements("a.cs", "b.cs", {}) == []
-    assert csharp_move.filter_intra_package_importer_changes(
-        "a.cs", [("a", "b")], set()
-    ) == [("a", "b")]
-    assert csharp_move.filter_directory_self_changes("a.cs", [("a", "b")], set()) == [
-        ("a", "b")
-    ]
-    assert isinstance(csharp_review.module_patterns("public class A {}"), list)
-    assert csharp_review.api_surface({"A.cs": "public class A {}"}) == {}
-
-    # typescript
-    assert isinstance(ts_review.module_patterns("export default function A() {}"), list)
-    assert ts_review.api_surface({"a.ts": "export function f() {}"}) == {}
-
-    # dart
-    assert isinstance(dart_move.get_verify_hint(), str)
-    assert dart_move.find_replacements("a.dart", "b.dart", {}) == {}
-    assert dart_move.find_self_replacements("a.dart", "b.dart", {}) == []
-    assert isinstance(dart_commands.get_detect_commands(), dict)
-    assert isinstance(dart_phases.DART_COMPLEXITY_SIGNALS, list)
-    assert callable(dart_phases._phase_structural)
-    assert callable(dart_phases._phase_coupling)
-    assert isinstance(dart_review.HOLISTIC_REVIEW_DIMENSIONS, list)
-
-    # gdscript
-    assert isinstance(gdscript_move.get_verify_hint(), str)
-    assert gdscript_move.find_replacements("a.gd", "b.gd", {}) == {}
-    assert gdscript_move.find_self_replacements("a.gd", "b.gd", {}) == []
-    assert isinstance(gdscript_commands.get_detect_commands(), dict)
-    assert isinstance(gdscript_phases.GDSCRIPT_COMPLEXITY_SIGNALS, list)
-    assert callable(gdscript_phases._phase_structural)
-    assert callable(gdscript_phases._phase_coupling)
-    assert isinstance(gdscript_review.HOLISTIC_REVIEW_DIMENSIONS, list)
 
 
 def test_smoke_intelligence():
@@ -330,14 +220,6 @@ def test_build_query_payload_structure():
     assert len(payload["items"]) == 1
     assert payload["queue"]["total"] == 1
     assert payload["narrative"] is None
-
-
-def test_private_imports_is_dunder():
-    """_is_dunder correctly identifies dunder names."""
-    assert private_imports._is_dunder("__all__") is True
-    assert private_imports._is_dunder("__init__") is True
-    assert private_imports._is_dunder("_private") is False
-    assert private_imports._is_dunder("public") is False
 
 
 def test_command_registry_has_core_commands():

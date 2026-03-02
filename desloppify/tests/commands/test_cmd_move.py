@@ -63,17 +63,14 @@ class TestDedup:
 class TestDetectLangFromExt:
     """detect_lang_from_ext maps file extensions to language names."""
 
-    def test_typescript_ts(self):
-        assert detect_lang_from_ext("foo.ts") == "typescript"
+    def test_kotlin_kt(self):
+        assert detect_lang_from_ext("Foo.kt") == "kotlin"
 
-    def test_typescript_tsx(self):
-        assert detect_lang_from_ext("foo.tsx") == "typescript"
+    def test_kotlin_kts(self):
+        assert detect_lang_from_ext("build.gradle.kts") == "kotlin"
 
-    def test_python_py(self):
-        assert detect_lang_from_ext("foo.py") == "python"
-
-    def test_csharp_cs(self):
-        assert detect_lang_from_ext("foo.cs") == "csharp"
+    def test_swift(self):
+        assert detect_lang_from_ext("Foo.swift") == "swift"
 
     def test_unknown_ext(self):
         assert detect_lang_from_ext("foo.xyz") is None
@@ -82,7 +79,7 @@ class TestDetectLangFromExt:
         assert detect_lang_from_ext("Makefile") is None
 
     def test_full_path(self):
-        assert detect_lang_from_ext("/src/components/Button.tsx") == "typescript"
+        assert detect_lang_from_ext("/src/commonMain/kotlin/Foo.kt") == "kotlin"
 
 
 # ---------------------------------------------------------------------------
@@ -93,17 +90,13 @@ class TestDetectLangFromExt:
 class TestDetectLangFromDir:
     """detect_lang_from_dir inspects directory contents."""
 
-    def test_python_dir(self, tmp_path):
-        (tmp_path / "foo.py").write_text("")
-        assert detect_lang_from_dir(str(tmp_path)) == "python"
+    def test_kotlin_dir(self, tmp_path):
+        (tmp_path / "Foo.kt").write_text("")
+        assert detect_lang_from_dir(str(tmp_path)) == "kotlin"
 
-    def test_typescript_dir(self, tmp_path):
-        (tmp_path / "bar.ts").write_text("")
-        assert detect_lang_from_dir(str(tmp_path)) == "typescript"
-
-    def test_csharp_dir(self, tmp_path):
-        (tmp_path / "Service.cs").write_text("")
-        assert detect_lang_from_dir(str(tmp_path)) == "csharp"
+    def test_swift_dir(self, tmp_path):
+        (tmp_path / "Bar.swift").write_text("")
+        assert detect_lang_from_dir(str(tmp_path)) == "swift"
 
     def test_empty_dir(self, tmp_path):
         assert detect_lang_from_dir(str(tmp_path)) is None
@@ -114,10 +107,10 @@ class TestDetectLangFromDir:
         assert detect_lang_from_dir(str(tmp_path)) is None
 
     def test_nested_files(self, tmp_path):
-        sub = tmp_path / "src" / "components"
+        sub = tmp_path / "src" / "commonMain" / "kotlin"
         sub.mkdir(parents=True)
-        (sub / "App.tsx").write_text("")
-        assert detect_lang_from_dir(str(tmp_path)) == "typescript"
+        (sub / "App.kt").write_text("")
+        assert detect_lang_from_dir(str(tmp_path)) == "kotlin"
 
 
 # ---------------------------------------------------------------------------

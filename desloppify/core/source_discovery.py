@@ -168,16 +168,8 @@ def find_source_files(
     )
 
 
-def find_ts_files(path: str | Path) -> list[str]:
-    return find_source_files(path, [".ts", ".tsx"])
-
-
-def find_tsx_files(path: str | Path) -> list[str]:
-    return find_source_files(path, [".tsx"])
-
-
-def find_py_files(path: str | Path) -> list[str]:
-    return find_source_files(path, [".py"])
+def find_kt_files(path: str | Path) -> list[str]:
+    return find_source_files(path, [".kt", ".kts"])
 
 
 __all__ = [
@@ -191,7 +183,5 @@ __all__ = [
     "read_file_text",
     "clear_source_file_cache_for_tests",
     "find_source_files",
-    "find_ts_files",
-    "find_tsx_files",
-    "find_py_files",
+    "find_kt_files",
 ]

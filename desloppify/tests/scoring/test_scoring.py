@@ -293,13 +293,13 @@ class TestDetectorPassRate:
         assert weighted == pytest.approx(0.9)
         assert rate == pytest.approx(9.1 / 10.0)
 
-    def test_dict_keys_is_file_based(self):
-        """dict_keys detector should also use file-based tiered capping."""
+    def test_smells_is_file_based(self):
+        """smells detector should use file-based tiered capping."""
         findings = _findings_dict(
-            _finding("dict_keys", status="open", confidence="high", file="a.py"),
-            _finding("dict_keys", status="open", confidence="high", file="a.py"),
+            _finding("smells", status="open", confidence="high", file="a.kt"),
+            _finding("smells", status="open", confidence="high", file="a.kt"),
         )
-        rate, issues, weighted = detector_pass_rate("dict_keys", findings, 10)
+        rate, issues, weighted = detector_pass_rate("smells", findings, 10)
         assert issues == 2
         assert weighted == 1.0  # capped
 
@@ -444,19 +444,19 @@ class TestComputeDimensionScores:
         """Dimension with multiple detectors pools potentials."""
         findings = _findings_dict(
             _finding("smells", status="open", confidence="high", file="a.py"),
-            _finding("react", status="open", confidence="high", file="b.tsx"),
+            _finding("unused", status="open", confidence="high", file="b.kt"),
         )
-        potentials = {"smells": 50, "react": 50}
+        potentials = {"smells": 50, "unused": 50}
         result = compute_dimension_scores(findings, potentials)
         dim = result["Code quality"]
         # smells: 1 file-based finding -> 1.0 weighted failure
-        # react: 1 non-file-based finding -> 1.0 weighted failure
+        # unused: 1 non-file-based finding -> 1.0 weighted failure
         # total: (100 - 2.0) / 100 * 100 = 98.0
         assert dim["score"] == 98.0
         assert dim["checks"] == 100
         assert dim["issues"] == 2
         assert "smells" in dim["detectors"]
-        assert "react" in dim["detectors"]
+        assert "unused" in dim["detectors"]
 
     def test_strict_mode_propagates(self):
         findings = _findings_dict(

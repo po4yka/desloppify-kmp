@@ -326,6 +326,8 @@ class TestPrepareReview:
             "incomplete_migration",
             "package_organization",
             "design_coherence",
+            "kmp_platform_boundary",
+            "compose_state_management",
         ]
         assert "system_prompt" in data
         assert len(data["files"]) == 1

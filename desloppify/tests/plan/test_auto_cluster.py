@@ -68,10 +68,10 @@ def test_grouping_key_review():
 
 def test_grouping_key_needs_judgment_with_kind():
     from desloppify.core.registry import DETECTORS
-    f = _finding("a", "dict_keys", detail={"kind": "phantom_read"})
-    meta = DETECTORS.get("dict_keys")
+    f = _finding("a", "smells", detail={"kind": "empty_branch"})
+    meta = DETECTORS.get("smells")
     key = _grouping_key(f, meta)
-    assert key == "typed::dict_keys::phantom_read"
+    assert key == "typed::smells::empty_branch"
 
 
 def test_grouping_key_structural():

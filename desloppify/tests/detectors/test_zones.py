@@ -439,7 +439,6 @@ class TestZonePolicies:
             "orphaned",
             "coupling",
             "facade",
-            "dict_keys",
             "test_coverage",
             "security",
             "private_imports",
@@ -468,7 +467,6 @@ class TestZonePolicies:
             "orphaned",
             "coupling",
             "facade",
-            "dict_keys",
             "test_coverage",
             "security",
         }
@@ -484,7 +482,7 @@ class TestZonePolicies:
         assert "test_coverage" in policy.skip_detectors
         assert "unused" in policy.skip_detectors
         assert "smells" in policy.skip_detectors
-        assert "react" in policy.skip_detectors
+        assert "smells" in policy.skip_detectors
         assert "naming" in policy.skip_detectors
         assert "cycles" in policy.skip_detectors
 

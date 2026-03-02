@@ -28,7 +28,7 @@ from desloppify.cli import (
     create_parser,
     state_path,
 )
-from desloppify.languages.csharp import CSharpConfig
+from desloppify.languages import get_lang
 
 # ===========================================================================
 # Module import
@@ -86,12 +86,12 @@ class TestCreateParser:
             parser.parse_args(["scan", "--roslyn-cmd", "legacy"])
 
     def test_scan_with_lang(self, parser):
-        args = parser.parse_args(["--lang", "python", "scan"])
-        assert args.lang == "python"
+        args = parser.parse_args(["--lang", "kotlin", "scan"])
+        assert args.lang == "kotlin"
 
     def test_scan_rejects_subcommand_lang_position(self, parser, capsys):
         with pytest.raises(SystemExit):
-            parser.parse_args(["scan", "--lang", "python"])
+            parser.parse_args(["scan", "--lang", "kotlin"])
         err = capsys.readouterr().err
         assert "unrecognized arguments" in err
         assert "--lang" in err
@@ -125,9 +125,9 @@ class TestCreateParser:
         assert args.json is True
 
     def test_show_command_with_pattern(self, parser):
-        args = parser.parse_args(["show", "src/foo.py"])
+        args = parser.parse_args(["show", "src/foo.kt"])
         assert args.command == "show"
-        assert args.pattern == "src/foo.py"
+        assert args.pattern == "src/foo.kt"
 
     def test_show_command_default_status(self, parser):
         args = parser.parse_args(["show"])
@@ -286,37 +286,19 @@ class TestCreateParser:
         with pytest.raises(SystemExit):
             parser.parse_args(["detect", "deps", "--roslyn-cmd", "legacy"])
 
-    def test_lang_opt_parsed_for_csharp(self):
-        args = SimpleNamespace(lang_opt=["roslyn_cmd=fake-roslyn --json"])
-        options = resolve_lang_runtime_options(args, CSharpConfig())
-        assert options["roslyn_cmd"] == "fake-roslyn --json"
-
     def test_lang_opt_rejects_invalid_key_value_pair(self):
+        kotlin_cfg = get_lang("kotlin")
         args = SimpleNamespace(lang_opt=["not_a_pair"])
         with pytest.raises(LangRuntimeOptionsError) as exc:
-            resolve_lang_runtime_options(args, CSharpConfig())
+            resolve_lang_runtime_options(args, kotlin_cfg)
         assert "Invalid --lang-opt" in str(exc.value)
         assert "Expected KEY=VALUE" in str(exc.value)
 
-    def test_language_settings_loaded_from_config_namespace(self):
-        lang = CSharpConfig()
-        config = {
-            "languages": {
-                "csharp": {
-                    "corroboration_min_signals": 3,
-                    "high_fanout_threshold": 8,
-                }
-            }
-        }
-        settings = resolve_lang_settings(config, lang)
-        assert settings["corroboration_min_signals"] == 3
-        assert settings["high_fanout_threshold"] == 8
-
     def test_move_command(self, parser):
-        args = parser.parse_args(["move", "src/foo.py", "src/bar/foo.py", "--dry-run"])
+        args = parser.parse_args(["move", "src/foo.kt", "src/bar/foo.kt", "--dry-run"])
         assert args.command == "move"
-        assert args.source == "src/foo.py"
-        assert args.dest == "src/bar/foo.py"
+        assert args.source == "src/foo.kt"
+        assert args.dest == "src/bar/foo.kt"
         assert args.dry_run is True
 
     def test_viz_command(self, parser):
@@ -437,15 +419,15 @@ class TestCreateParser:
         assert args.zone_action == "show"
 
     def test_zone_set(self, parser):
-        args = parser.parse_args(["zone", "set", "src/foo.py", "test"])
+        args = parser.parse_args(["zone", "set", "src/foo.kt", "test"])
         assert args.zone_action == "set"
-        assert args.zone_path == "src/foo.py"
+        assert args.zone_path == "src/foo.kt"
         assert args.zone_value == "test"
 
     def test_zone_clear(self, parser):
-        args = parser.parse_args(["zone", "clear", "src/foo.py"])
+        args = parser.parse_args(["zone", "clear", "src/foo.kt"])
         assert args.zone_action == "clear"
-        assert args.zone_path == "src/foo.py"
+        assert args.zone_path == "src/foo.kt"
 
     def test_dev_scaffold_lang(self, parser):
         args = parser.parse_args(
@@ -524,10 +506,10 @@ class TestStatePath:
         """state_path auto-detects language and returns lang-specific path."""
         args = SimpleNamespace()
         # When auto_detect_lang finds a language, state_path returns lang-specific path
-        with patch("desloppify.languages.auto_detect_lang", return_value="python"):
+        with patch("desloppify.languages.auto_detect_lang", return_value="kotlin"):
             result = state_path(args)
             assert result is not None
-            assert "state-python.json" in str(result)
+            assert "state-kotlin.json" in str(result)
         # When auto_detect_lang finds nothing, state_path returns None
         with patch("desloppify.languages.auto_detect_lang", return_value=None):
             result = state_path(args)
@@ -539,14 +521,14 @@ class TestStatePath:
         assert result == Path("/tmp/custom.json")
 
     def test_returns_lang_based_path_when_lang_set(self):
-        args = SimpleNamespace(lang="python")
+        args = SimpleNamespace(lang="kotlin")
         result = state_path(args)
         assert result is not None
-        assert "state-python.json" in str(result)
+        assert "state-kotlin.json" in str(result)
         assert ".desloppify" in str(result)
 
     def test_explicit_state_takes_precedence_over_lang(self):
-        args = SimpleNamespace(state="/tmp/override.json", lang="python")
+        args = SimpleNamespace(state="/tmp/override.json", lang="kotlin")
         result = state_path(args)
         assert result == Path("/tmp/override.json")
 
@@ -555,30 +537,30 @@ class TestStatePath:
     ):
         state_dir = tmp_path / ".desloppify"
         state_dir.mkdir()
-        existing = state_dir / "state-typescript.json"
+        existing = state_dir / "state-swift.json"
         existing.write_text("{}")
         monkeypatch.setattr("desloppify.app.commands.helpers.state.PROJECT_ROOT", tmp_path)
 
-        args = SimpleNamespace(state=None, lang="python", command="status")
+        args = SimpleNamespace(state=None, lang="kotlin", command="status")
         result = state_path(args)
         assert result == existing
 
     def test_scan_does_not_fallback_to_other_lang_state(self, monkeypatch, tmp_path):
         state_dir = tmp_path / ".desloppify"
         state_dir.mkdir()
-        (state_dir / "state-typescript.json").write_text("{}")
+        (state_dir / "state-swift.json").write_text("{}")
         monkeypatch.setattr("desloppify.app.commands.helpers.state.PROJECT_ROOT", tmp_path)
 
-        args = SimpleNamespace(state=None, lang="python", command="scan")
+        args = SimpleNamespace(state=None, lang="kotlin", command="scan")
         result = state_path(args)
-        assert result == state_dir / "state-python.json"
+        assert result == state_dir / "state-kotlin.json"
 
     def test_non_scan_without_lang_uses_sole_existing_state(
         self, monkeypatch, tmp_path
     ):
         state_dir = tmp_path / ".desloppify"
         state_dir.mkdir()
-        existing = state_dir / "state-python.json"
+        existing = state_dir / "state-kotlin.json"
         existing.write_text("{}")
         monkeypatch.setattr("desloppify.app.commands.helpers.state.PROJECT_ROOT", tmp_path)
         monkeypatch.setattr(
@@ -595,13 +577,13 @@ class TestStatePath:
     ):
         state_dir = tmp_path / ".desloppify"
         state_dir.mkdir()
-        (state_dir / "state-python.json").write_text("{}")
-        (state_dir / "state-typescript.json").write_text("{}")
+        (state_dir / "state-kotlin.json").write_text("{}")
+        (state_dir / "state-swift.json").write_text("{}")
         monkeypatch.setattr("desloppify.app.commands.helpers.state.PROJECT_ROOT", tmp_path)
 
-        args = SimpleNamespace(state=None, lang="csharp", command="status")
+        args = SimpleNamespace(state=None, lang="kotlin", command="status")
         result = state_path(args)
-        assert result == state_dir / "state-csharp.json"
+        assert result == state_dir / "state-kotlin.json"
 
 
 class TestResolveDefaultPath:
@@ -617,7 +599,7 @@ class TestResolveDefaultPath:
         project_root = tmp_path / "myproject"
         project_root.mkdir()
         # Simulate a project with files at the root (no src/ subdir)
-        (project_root / "server.ts").write_text("export {}")
+        (project_root / "server.swift").write_text("export {}")
         saved_state = {"scan_path": "."}  # scan was run with --path .
 
         monkeypatch.setattr(cli_mod, "PROJECT_ROOT", project_root)
@@ -671,10 +653,10 @@ class TestResolveDefaultPath:
 
 class TestResolveLang:
     def test_prefers_explicit_lang(self):
-        args = SimpleNamespace(lang="python", path="/tmp/somewhere")
+        args = SimpleNamespace(lang="kotlin", path="/tmp/somewhere")
         lang = resolve_lang(args)
         assert lang is not None
-        assert lang.name == "python"
+        assert lang.name == "kotlin"
 
     def test_auto_detect_uses_path_when_it_looks_like_project_root(
         self, tmp_path, monkeypatch
@@ -682,42 +664,42 @@ class TestResolveLang:
         # CWD-style project root is python.
         cwd_root = tmp_path / "cwd_project"
         cwd_root.mkdir()
-        (cwd_root / "pyproject.toml").write_text("[tool.pytest]\n")
+        (cwd_root / "build.gradle.kts").write_text("[tool.pytest]\n")
         py_src = cwd_root / "src"
         py_src.mkdir()
-        (py_src / "main.py").write_text("print('x')\n")
+        (py_src / "main.kt").write_text("print('x')\n")
 
         # Target --path root is typescript.
         target_root = tmp_path / "target_project"
         target_root.mkdir()
-        (target_root / "package.json").write_text('{"name": "target"}\n')
+        (target_root / "Package.swift").write_text('{"name": "target"}\n')
         ts_src = target_root / "src"
         ts_src.mkdir()
-        (ts_src / "index.ts").write_text("export const x = 1\n")
+        (ts_src / "index.swift").write_text("export const x = 1\n")
 
         monkeypatch.setattr(lang_helpers_mod, "PROJECT_ROOT", cwd_root)
         monkeypatch.setattr("desloppify.utils.PROJECT_ROOT", cwd_root)
         args = SimpleNamespace(lang=None, path=str(target_root))
         lang = resolve_lang(args)
         assert lang is not None
-        assert lang.name == "typescript"
+        assert lang.name == "swift"
 
     def test_auto_detect_falls_back_to_project_root_for_subdir_path(
         self, tmp_path, monkeypatch
     ):
         root = tmp_path / "project"
         root.mkdir()
-        (root / "pyproject.toml").write_text("[tool.pytest]\n")
+        (root / "build.gradle.kts").write_text("[tool.pytest]\n")
         src = root / "src"
         src.mkdir()
-        (src / "main.py").write_text("print('x')\n")
+        (src / "main.kt").write_text("print('x')\n")
 
         monkeypatch.setattr(lang_helpers_mod, "PROJECT_ROOT", root)
         monkeypatch.setattr("desloppify.utils.PROJECT_ROOT", root)
         args = SimpleNamespace(lang=None, path=str(src))
         lang = resolve_lang(args)
         assert lang is not None
-        assert lang.name == "python"
+        assert lang.name == "kotlin"
 
     def test_auto_detect_walks_up_from_external_subdir_path(
         self, tmp_path, monkeypatch
@@ -725,23 +707,23 @@ class TestResolveLang:
         # CWD-style project root is python.
         cwd_root = tmp_path / "cwd_project"
         cwd_root.mkdir()
-        (cwd_root / "pyproject.toml").write_text("[tool.pytest]\n")
-        (cwd_root / "local.py").write_text("print('local')\n")
+        (cwd_root / "build.gradle.kts").write_text("[tool.pytest]\n")
+        (cwd_root / "local.kt").write_text("print('local')\n")
 
         # External target is typescript, and --path points to target/src.
         target_root = tmp_path / "target_project"
         target_root.mkdir()
-        (target_root / "package.json").write_text('{"name":"target"}\n')
+        (target_root / "Package.swift").write_text('{"name":"target"}\n')
         target_src = target_root / "src"
         target_src.mkdir()
-        (target_src / "index.ts").write_text("export const x = 1\n")
+        (target_src / "index.swift").write_text("export const x = 1\n")
 
         monkeypatch.setattr(lang_helpers_mod, "PROJECT_ROOT", cwd_root)
         monkeypatch.setattr("desloppify.utils.PROJECT_ROOT", cwd_root)
         args = SimpleNamespace(lang=None, path=str(target_src))
         lang = resolve_lang(args)
         assert lang is not None
-        assert lang.name == "typescript"
+        assert lang.name == "swift"
 
     def test_auto_detect_prefers_path_subtree_when_no_markers(
         self, tmp_path, monkeypatch
@@ -753,12 +735,12 @@ class TestResolveLang:
         ts_dir = root / "web"
         ts_dir.mkdir()
         for i in range(3):
-            (ts_dir / f"view_{i}.ts").write_text("export const x = 1\n")
+            (ts_dir / f"view_{i}.swift").write_text("export const x = 1\n")
 
         py_dir = root / "scripts"
         py_dir.mkdir()
         for i in range(2):
-            (py_dir / f"job_{i}.py").write_text("print('x')\n")
+            (py_dir / f"job_{i}.kt").write_text("print('x')\n")
 
         monkeypatch.setattr(lang_helpers_mod, "PROJECT_ROOT", root)
         monkeypatch.setattr("desloppify.utils.PROJECT_ROOT", root)
@@ -768,7 +750,7 @@ class TestResolveLang:
         args = SimpleNamespace(lang=None, path=str(py_dir))
         lang = resolve_lang(args)
         assert lang is not None
-        assert lang.name == "python"
+        assert lang.name == "kotlin"
 
     def test_lang_config_markers_include_plugin_markers(self, monkeypatch):
         class DummyCfg:
@@ -787,7 +769,7 @@ class TestResolveLang:
     def test_resolve_detection_root_uses_plugin_marker(self, tmp_path, monkeypatch):
         cwd_root = tmp_path / "cwd_project"
         cwd_root.mkdir()
-        (cwd_root / "pyproject.toml").write_text("[tool.pytest]\n")
+        (cwd_root / "build.gradle.kts").write_text("[tool.pytest]\n")
 
         target_root = tmp_path / "target_project"
         target_root.mkdir()
@@ -935,12 +917,12 @@ class TestCliSmokeBaseline:
         scan_args = parser.parse_args(
             [
                 "--lang",
-                "python",
+                "kotlin",
                 "scan",
                 "--path",
                 "desloppify/tests/fixtures/cli_smoke_project/src",
                 "--state",
-                "desloppify/tests/snapshots/cli_smoke/state-python.json",
+                "desloppify/tests/snapshots/cli_smoke/state-kotlin.json",
                 "--no-badge",
             ]
         )
@@ -950,10 +932,10 @@ class TestCliSmokeBaseline:
         status_args = parser.parse_args(
             [
                 "--lang",
-                "python",
+                "kotlin",
                 "status",
                 "--state",
-                "desloppify/tests/snapshots/cli_smoke/state-python.json",
+                "desloppify/tests/snapshots/cli_smoke/state-kotlin.json",
             ]
         )
         assert status_args.command == "status"
@@ -961,13 +943,13 @@ class TestCliSmokeBaseline:
         review_args = parser.parse_args(
             [
                 "--lang",
-                "python",
+                "kotlin",
                 "review",
                 "--prepare",
                 "--path",
                 "tests/fixtures/cli_smoke_project/src",
                 "--state",
-                "tests/snapshots/cli_smoke/state-python.json",
+                "tests/snapshots/cli_smoke/state-kotlin.json",
             ]
         )
         assert review_args.command == "review"

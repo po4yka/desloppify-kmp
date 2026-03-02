@@ -531,16 +531,16 @@ class TestRegistryIntegration:
         assert "cycles" in JUDGMENT_DETECTORS
 
     def test_judgment_detectors_excludes_clearcut(self):
-        for det in ("unused", "logs", "exports", "deprecated", "security",
+        for det in ("unused", "logs", "deprecated", "security",
                      "test_coverage", "stale_exclude"):
             assert det not in JUDGMENT_DETECTORS
 
     def test_judgment_detectors_includes_expected(self):
         expected = {
             "structural", "smells", "dupes", "boilerplate_duplication",
-            "coupling", "cycles", "props", "react", "orphaned", "naming",
+            "coupling", "cycles", "props", "orphaned", "naming",
             "patterns", "facade", "single_use", "responsibility_cohesion",
-            "signature", "dict_keys", "flat_dirs", "global_mutable_config",
+            "signature", "flat_dirs", "global_mutable_config",
             "private_imports", "layer_violation",
         }
         assert expected.issubset(JUDGMENT_DETECTORS)

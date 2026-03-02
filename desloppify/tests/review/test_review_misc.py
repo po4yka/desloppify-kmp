@@ -553,54 +553,50 @@ class TestNewDimensions:
 
 
 class TestLangGuidance:
-    def test_python_guidance_exists(self):
-        assert "python" in LANG_GUIDANCE
-        py = LANG_GUIDANCE["python"]
-        assert "patterns" in py
-        assert "naming" in py
-        assert len(py["patterns"]) >= 3
+    def test_kotlin_guidance_exists(self):
+        assert "kotlin" in LANG_GUIDANCE
+        kt = LANG_GUIDANCE["kotlin"]
+        assert "patterns" in kt
+        assert "naming" in kt
+        assert len(kt["patterns"]) >= 3
 
-    def test_typescript_guidance_exists(self):
-        assert "typescript" in LANG_GUIDANCE
-        ts = LANG_GUIDANCE["typescript"]
-        assert "patterns" in ts
-        assert "naming" in ts
-        assert len(ts["patterns"]) >= 3
+    def test_kotlin_guidance_has_auth(self):
+        assert "kotlin" in LANG_GUIDANCE
+        kt = LANG_GUIDANCE["kotlin"]
+        assert "auth" in kt
+        assert len(kt["auth"]) >= 3
 
     def test_prepare_includes_lang_guidance(self, mock_lang, empty_state, tmp_path):
-        f = tmp_path / "foo.ts"
-        f.write_text("export function getData() { return 42; }\n" * 25)
+        f = tmp_path / "Foo.kt"
+        f.write_text("fun getData(): Int { return 42 }\n" * 25)
         mock_lang.file_finder = MagicMock(return_value=[str(f)])
         data = prepare_review(tmp_path, mock_lang, empty_state)
         assert "lang_guidance" in data
         assert "language" in data
-        assert data["language"] == "typescript"
+        assert data["language"] == "kotlin"
 
-    def test_python_auth_guidance_exists(self):
-        py = LANG_GUIDANCE["python"]
-        assert "auth" in py
-        assert len(py["auth"]) >= 3
-        auth_text = " ".join(py["auth"]).lower()
-        assert "login_required" in auth_text
-        assert "request.user" in auth_text
+    def test_kotlin_auth_guidance_content(self):
+        kt = LANG_GUIDANCE["kotlin"]
+        assert "auth" in kt
+        assert len(kt["auth"]) >= 3
+        auth_text = " ".join(str(a) for a in kt["auth"]).lower()
+        assert "ktor" in auth_text or "authorization" in auth_text or "session" in auth_text or "token" in auth_text
 
-    def test_typescript_auth_guidance_exists(self):
-        ts = LANG_GUIDANCE["typescript"]
-        assert "auth" in ts
-        assert len(ts["auth"]) >= 3
-        auth_text = " ".join(ts["auth"]).lower()
-        assert "useauth" in auth_text or "getserversession" in auth_text
+    def test_kotlin_naming_guidance_exists(self):
+        kt = LANG_GUIDANCE["kotlin"]
+        assert "naming" in kt
+        assert len(kt["naming"]) >= 2
 
-    def test_prepare_includes_lang_guidance_python(self, empty_state, tmp_path):
+    def test_prepare_includes_lang_guidance_kotlin(self, empty_state, tmp_path):
         lang = MagicMock()
-        lang.name = "python"
+        lang.name = "kotlin"
         lang.zone_map = None
         lang.dep_graph = None
-        f = tmp_path / "foo.py"
-        f.write_text("def get_data():\n    return 42\n" * 15)
+        f = tmp_path / "Foo.kt"
+        f.write_text("fun getData(): Int {\n    return 42\n}\n" * 10)
         lang.file_finder = MagicMock(return_value=[str(f)])
         data = prepare_review(tmp_path, lang, empty_state)
-        assert data["language"] == "python"
+        assert data["language"] == "kotlin"
         assert "patterns" in data["lang_guidance"]
 
 
