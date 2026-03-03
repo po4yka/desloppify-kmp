@@ -49,12 +49,37 @@
         "kapt usage that should be migrated to KSP",
         "Duplicate library entries in version catalog",
         "AGP version below 9.0 needing KMP migration planning",
-        "buildSrc directory instead of included build (build-logic)"
+        "buildSrc directory instead of included build (build-logic)",
+        "jcenter() repository usage (deprecated, removed in Gradle 9)",
+        "targetSdk below 34 (Google Play rejection)",
+        "Debug signing config used in release builds",
+        "Hardcoded signing passwords in build files"
       ],
       "skip": [
         "Test-only dependencies in test source sets",
         "Platform-specific dependencies that are inherently non-shared",
         "Build plugin dependencies"
+      ]
+    },
+    "android_native_quality": {
+      "description": "Android-specific configuration, security, and API usage quality",
+      "look_for": [
+        "AndroidManifest.xml exported components without android:permission",
+        "Components with intent-filter but no android:exported attribute (API 31+ crash)",
+        "android:debuggable=true or android:usesCleartextTraffic=true",
+        "Hardcoded API keys in manifest android:value attributes",
+        "android:allowBackup=true without fullBackupContent or dataExtractionRules",
+        "Missing android:networkSecurityConfig on <application>",
+        "Deprecated Android APIs: AsyncTask, IntentService, LocalBroadcastManager",
+        "MODE_WORLD_READABLE/WRITABLE usage (insecure file access)",
+        "rawQuery() with string concatenation (SQL injection risk)",
+        "Old android.support.v4/v7 imports instead of AndroidX",
+        "kotlin-android-extensions or synthetic imports (deprecated)"
+      ],
+      "skip": [
+        "Debug-only manifest files in debug build variants",
+        "Test source sets where deprecated APIs may be acceptable",
+        "Generated code in build directories"
       ]
     },
     "cross_module_architecture": {

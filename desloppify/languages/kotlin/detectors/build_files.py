@@ -171,6 +171,107 @@ def _check_gradle(
                 "confidence": "medium",
             })
 
+    # ── Android-specific Gradle checks ────────────────────────
+
+    # B1: jcenter() deprecated repository
+    if re.search(r'\bjcenter\s*\(\s*\)', content):
+        findings.append({
+            "file": filepath,
+            "line": 1,
+            "summary": "jcenter() is deprecated and removed in Gradle 9 -- migrate to mavenCentral()",
+            "detail": {"kind": "jcenter_deprecated"},
+            "tier": 1,
+            "confidence": "high",
+        })
+
+    # B2: low targetSdk (below 34 = Google Play rejection)
+    m = re.search(r'targetSdk\s*(?:=\s*|\.set\()(\d+)', content)
+    if m:
+        target_sdk = int(m.group(1))
+        if target_sdk < 34:
+            findings.append({
+                "file": filepath,
+                "line": 1,
+                "summary": f"targetSdk {target_sdk} is below 34 -- Google Play requires 34+",
+                "detail": {"kind": "low_target_sdk", "targetSdk": target_sdk},
+                "tier": 1,
+                "confidence": "medium",
+            })
+
+    # B3: minify enabled without proguard files
+    if re.search(r'isMinifyEnabled\s*=\s*true', content):
+        if not re.search(r'proguardFiles?\s*\(', content):
+            findings.append({
+                "file": filepath,
+                "line": 1,
+                "summary": "isMinifyEnabled = true without proguardFiles -- R8 has no rules to keep",
+                "detail": {"kind": "minify_no_proguard"},
+                "tier": 1,
+                "confidence": "medium",
+            })
+
+    # B4: Compose dependencies without buildFeatures { compose = true }
+    has_compose_dep = bool(re.search(
+        r'(androidx\.compose|compose\.\w+\.\w+|"org\.jetbrains\.compose")', content,
+    ))
+    has_compose_feature = bool(re.search(
+        r'compose\s*=\s*true|compose\s*\{\s*enabled|composeOptions', content,
+    ))
+    if has_compose_dep and not has_compose_feature and not is_kmp:
+        findings.append({
+            "file": filepath,
+            "line": 1,
+            "summary": "Compose dependencies without buildFeatures { compose = true }",
+            "detail": {"kind": "missing_compose_feature"},
+            "tier": 1,
+            "confidence": "medium",
+        })
+
+    # B5: debug signing config used in release block
+    if re.search(r'release\s*\{[^}]*signingConfig\s*=?\s*signingConfigs\s*\.\s*debug', content, re.DOTALL):
+        findings.append({
+            "file": filepath,
+            "line": 1,
+            "summary": "Release build uses debug signing config -- use a release keystore",
+            "detail": {"kind": "debug_signing_release"},
+            "tier": 1,
+            "confidence": "high",
+        })
+
+    # B6: hardcoded signing passwords
+    if re.search(r'(storePassword|keyPassword)\s*=\s*"[^"]+(?!"\s*//)', content):
+        findings.append({
+            "file": filepath,
+            "line": 1,
+            "summary": "Hardcoded signing password in build file -- use environment variables or local.properties",
+            "detail": {"kind": "hardcoded_signing"},
+            "tier": 1,
+            "confidence": "high",
+        })
+
+    # B7: minify enabled but shrinkResources not set
+    if re.search(r'isMinifyEnabled\s*=\s*true', content):
+        if not re.search(r'isShrinkResources\s*=', content):
+            findings.append({
+                "file": filepath,
+                "line": 1,
+                "summary": "isMinifyEnabled = true but isShrinkResources not set -- enable resource shrinking too",
+                "detail": {"kind": "minify_no_shrink"},
+                "tier": 2,
+                "confidence": "medium",
+            })
+
+    # B8: kotlin-android-extensions plugin
+    if re.search(r"kotlin-android-extensions|kotlin\(\s*['\"]android.extensions['\"]\s*\)", content):
+        findings.append({
+            "file": filepath,
+            "line": 1,
+            "summary": "kotlin-android-extensions is deprecated -- migrate to view binding",
+            "detail": {"kind": "kotlin_android_extensions"},
+            "tier": 2,
+            "confidence": "high",
+        })
+
     return findings
 
 
@@ -276,6 +377,17 @@ def _check_settings(filepath: str, content: str) -> list[dict]:
             "detail": {"kind": "allprojects_antipattern"},
             "tier": 3,
             "confidence": "medium",
+        })
+
+    # jcenter() in settings repositories
+    if re.search(r'\bjcenter\s*\(\s*\)', content):
+        findings.append({
+            "file": filepath,
+            "line": 1,
+            "summary": "jcenter() is deprecated and removed in Gradle 9 -- migrate to mavenCentral()",
+            "detail": {"kind": "jcenter_deprecated"},
+            "tier": 1,
+            "confidence": "high",
         })
 
     return findings

@@ -33,7 +33,7 @@ KT_ZONE_RULES: list[ZoneRule] = [
     ZoneRule(Zone.CONFIG, [
         "build.gradle.kts", "build.gradle", "settings.gradle.kts",
         "libs.versions.toml", "gradle.properties", "proguard-rules.pro",
-        "gradle-wrapper.properties",
+        "gradle-wrapper.properties", "AndroidManifest.xml",
     ]),
     ZoneRule(Zone.VENDOR, ["/build/", "/.gradle/", "/gradle/wrapper/"]),
     *COMMON_ZONE_RULES,
@@ -222,6 +222,23 @@ def _register_kmp_detectors() -> None:
                 "review and fix detekt static analysis findings",
             ),
             DetectorScoringPolicy("detekt", "Code quality", 3, file_based=True),
+        ),
+        (
+            DetectorMeta(
+                "android_manifest", "Android manifest", "Security", "manual_fix",
+                "fix AndroidManifest.xml security and configuration issues",
+            ),
+            DetectorScoringPolicy(
+                "android_manifest", "Security", 4,
+                excluded_zones=SECURITY_EXCLUDED_ZONES,
+            ),
+        ),
+        (
+            DetectorMeta(
+                "android_deprecated", "Android deprecated APIs", "Code quality", "manual_fix",
+                "replace deprecated Android APIs with modern alternatives",
+            ),
+            DetectorScoringPolicy("android_deprecated", "Code quality", 3, file_based=True),
         ),
         (
             DetectorMeta(

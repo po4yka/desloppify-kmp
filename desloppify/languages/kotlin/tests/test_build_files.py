@@ -361,6 +361,217 @@ compose-multiplatform = "1.6.0"
         assert not _has_kind(findings, "version_mismatch")
 
 
+class TestJcenterDeprecated:
+    def test_detects_jcenter_in_gradle(self):
+        content = """
+repositories {
+    jcenter()
+    mavenCentral()
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "jcenter_deprecated")
+
+    def test_no_flag_without_jcenter(self):
+        content = """
+repositories {
+    mavenCentral()
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "jcenter_deprecated")
+
+    def test_detects_jcenter_in_settings(self):
+        content = """
+dependencyResolutionManagement {
+    repositories {
+        jcenter()
+    }
+}
+"""
+        findings = _check_settings("settings.gradle.kts", content)
+        assert _has_kind(findings, "jcenter_deprecated")
+
+
+class TestLowTargetSdk:
+    def test_detects_target_sdk_below_34(self):
+        content = """
+android {
+    defaultConfig {
+        targetSdk = 33
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "low_target_sdk")
+
+    def test_no_flag_target_sdk_34(self):
+        content = """
+android {
+    defaultConfig {
+        targetSdk = 34
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "low_target_sdk")
+
+
+class TestMinifyNoProguard:
+    def test_detects_minify_without_proguard(self):
+        content = """
+buildTypes {
+    release {
+        isMinifyEnabled = true
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "minify_no_proguard")
+
+    def test_no_flag_with_proguard(self):
+        content = """
+buildTypes {
+    release {
+        isMinifyEnabled = true
+        proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "minify_no_proguard")
+
+
+class TestMissingComposeFeature:
+    def test_detects_compose_dep_without_feature(self):
+        content = """
+dependencies {
+    implementation("androidx.compose.ui:ui:1.5.0")
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "missing_compose_feature")
+
+    def test_no_flag_with_compose_feature(self):
+        content = """
+android {
+    buildFeatures {
+        compose = true
+    }
+}
+dependencies {
+    implementation("androidx.compose.ui:ui:1.5.0")
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "missing_compose_feature")
+
+    def test_no_flag_kmp_project(self):
+        content = """
+kotlin("multiplatform")
+dependencies {
+    implementation("androidx.compose.ui:ui:1.5.0")
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "missing_compose_feature")
+
+
+class TestDebugSigningRelease:
+    def test_detects_debug_signing_in_release(self):
+        content = """
+buildTypes {
+    release {
+        signingConfig = signingConfigs.debug
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "debug_signing_release")
+
+    def test_no_flag_release_signing(self):
+        content = """
+buildTypes {
+    release {
+        signingConfig = signingConfigs.release
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "debug_signing_release")
+
+
+class TestHardcodedSigning:
+    def test_detects_hardcoded_store_password(self):
+        content = """
+signingConfigs {
+    create("release") {
+        storePassword = "mysecretpassword"
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "hardcoded_signing")
+
+    def test_no_flag_env_variable(self):
+        content = """
+signingConfigs {
+    create("release") {
+        storePassword = System.getenv("STORE_PASSWORD")
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "hardcoded_signing")
+
+
+class TestMinifyNoShrink:
+    def test_detects_minify_without_shrink(self):
+        content = """
+buildTypes {
+    release {
+        isMinifyEnabled = true
+        proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "minify_no_shrink")
+
+    def test_no_flag_with_shrink(self):
+        content = """
+buildTypes {
+    release {
+        isMinifyEnabled = true
+        isShrinkResources = true
+        proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+    }
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "minify_no_shrink")
+
+
+class TestKotlinAndroidExtensions:
+    def test_detects_kotlin_android_extensions(self):
+        content = """
+plugins {
+    id("kotlin-android-extensions")
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert _has_kind(findings, "kotlin_android_extensions")
+
+    def test_no_flag_without_extensions(self):
+        content = """
+plugins {
+    kotlin("jvm")
+}
+"""
+        findings = _check_gradle("build.gradle.kts", content)
+        assert not _has_kind(findings, "kotlin_android_extensions")
+
+
 class TestParseMajorMinor:
     def test_normal_version(self):
         assert _parse_major_minor("1.9.20") == (1, 9)

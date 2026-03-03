@@ -180,6 +180,51 @@ def phase_build_files(path: Path, lang: Any) -> tuple[list[dict], dict[str, int]
     return findings, {"build_config": 1}
 
 
+def phase_android_manifest(path: Path, lang: Any) -> tuple[list[dict], dict[str, int]]:
+    """Scan AndroidManifest.xml for security and configuration issues."""
+    from desloppify.engine._state.filtering import make_finding
+    from desloppify.languages.kotlin.detectors.android_manifest import (
+        detect_android_manifest_issues,
+    )
+
+    raw = detect_android_manifest_issues(path)
+    findings = [
+        make_finding(
+            "android_manifest",
+            e["file"], "",
+            tier=e["tier"],
+            confidence=e["confidence"],
+            summary=e["summary"],
+            detail=e.get("detail"),
+        )
+        for e in raw
+    ]
+    return findings, {"android_manifest": 1}
+
+
+def phase_android_deprecated(path: Path, lang: Any) -> tuple[list[dict], dict[str, int]]:
+    """Detect deprecated Android API usage."""
+    from desloppify.engine._state.filtering import make_finding
+    from desloppify.languages.kotlin.detectors.android_deprecated import (
+        detect_android_deprecated_apis,
+    )
+
+    files = lang.file_finder(path) if lang.file_finder else []
+    raw = detect_android_deprecated_apis(files)
+    findings = [
+        make_finding(
+            "android_deprecated",
+            e["file"], "",
+            tier=e["tier"],
+            confidence=e["confidence"],
+            summary=e["summary"],
+            detail=e.get("detail"),
+        )
+        for e in raw
+    ]
+    return findings, {"android_deprecated": len(files)}
+
+
 # ── Tree-sitter phases ──────────────────────────────────────
 
 
@@ -328,6 +373,8 @@ def build_kotlin_phases() -> list[DetectorPhase]:
         DetectorPhase("Deprecated K/N patterns", phase_kn_memory),
         DetectorPhase("Compose smells", phase_compose_smells),
         DetectorPhase("Build config", phase_build_files),
+        DetectorPhase("Android manifest", phase_android_manifest),
+        DetectorPhase("Android deprecated APIs", phase_android_deprecated),
         # Coupling (dep graph based)
         _make_coupling_phase(),
         # Tree-sitter AST phases

@@ -1,0 +1,34 @@
+{
+  "default_dimensions_append": [
+    "ios_native_quality"
+  ],
+  "dimension_prompts": {
+    "ios_native_quality": {
+      "description": "iOS-specific configuration, security, and API usage quality",
+      "look_for": [
+        "NSAllowsArbitraryLoads=true disabling App Transport Security",
+        "Missing or placeholder CFBundleIdentifier in Info.plist",
+        "Missing CFBundleVersion or CFBundleShortVersionString",
+        "Missing PrivacyInfo.xcprivacy (required since Spring 2024)",
+        "ATS exceptions allowing insecure HTTP for non-localhost domains",
+        "Missing ITSAppUsesNonExemptEncryption key",
+        "NSExceptionMinimumTLSVersion set to TLS 1.0 or 1.1",
+        "UIWebView usage (App Store rejection)",
+        "DispatchQueue.main.sync deadlock risk",
+        "Hardcoded API keys, AWS keys, or private keys in Swift source",
+        "try! and as! force unwrapping without error handling",
+        "Deprecated UIAlertView, UIActionSheet, UISearchDisplayController",
+        "Empty catch blocks silently swallowing errors",
+        "Podfile without Podfile.lock committed",
+        "Pods without version constraints",
+        "Package.swift without Package.resolved committed"
+      ],
+      "skip": [
+        "Test source files where force unwrap may be acceptable",
+        "Generated code in build or DerivedData directories",
+        "Third-party code in Pods or Carthage directories"
+      ]
+    }
+  },
+  "system_prompt_append": "When reviewing Swift/iOS code, pay special attention to App Transport Security configuration, Info.plist completeness, deprecated UIKit APIs, and dependency lockfile hygiene."
+}
