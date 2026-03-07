@@ -1,4 +1,4 @@
-"""Language-resolution helpers for command modules."""
+"""Analyzer-resolution helpers for command modules."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+_MARKER_GLOB_CHARS = ("*", "?", "[")
 
 
 class LangResolutionError(SystemExit):
@@ -33,12 +34,20 @@ class LangResolutionError(SystemExit):
 
 
 EXTRA_ROOT_MARKERS = (
-    "package.json",
-    "pyproject.toml",
-    "setup.py",
-    "setup.cfg",
-    "go.mod",
-    "Cargo.toml",
+    "settings.gradle.kts",
+    "settings.gradle",
+    "build.gradle.kts",
+    "build.gradle",
+    "gradle.properties",
+    "gradle/libs.versions.toml",
+    "gradlew",
+    "composeApp",
+    "shared",
+    "androidApp",
+    "Package.swift",
+    "Podfile",
+    "*.xcodeproj",
+    "*.xcworkspace",
 )
 
 
@@ -50,7 +59,7 @@ def _cache_once(fn: Callable[[], tuple[str, ...]]) -> Callable[[], tuple[str, ..
 
 @_cache_once
 def _lang_config_markers() -> tuple[str, ...]:
-    """Collect project-root marker files from language plugins + fallback markers."""
+    """Collect mobile/KMP root markers from analyzers plus fallback markers."""
     markers = set(EXTRA_ROOT_MARKERS)
 
     for lang_name in lang_api.available_langs():
@@ -58,7 +67,7 @@ def _lang_config_markers() -> tuple[str, ...]:
             cfg = lang_api.get_lang(lang_name)
         except (ImportError, ValueError, TypeError, AttributeError) as exc:
             logger.debug(
-                "Skipping language marker collection for %s: %s", lang_name, exc
+                "Skipping analyzer marker collection for %s: %s", lang_name, exc
             )
             continue
         for marker in getattr(cfg, "detect_markers", []) or []:
@@ -76,7 +85,7 @@ def resolve_detection_root(
     project_root: Path = PROJECT_ROOT,
     marker_provider: Callable[[], tuple[str, ...]] | None = None,
 ) -> Path:
-    """Best root to auto-detect language from."""
+    """Best root to auto-detect an analyzer from."""
     marker_provider = marker_provider or _lang_config_markers
     markers = marker_provider()
 
@@ -91,13 +100,22 @@ def resolve_detection_root(
     search_root = candidate if candidate.is_dir() else candidate.parent
 
     for root in (search_root, *search_root.parents):
-        if any((root / marker).exists() for marker in markers):
+        if any(_root_has_marker(root, marker) for marker in markers):
             return root
     return search_root
 
 
+def _root_has_marker(root: Path, marker: str) -> bool:
+    cleaned = str(marker).strip()
+    if not cleaned:
+        return False
+    if any(ch in cleaned for ch in _MARKER_GLOB_CHARS):
+        return any(root.glob(cleaned))
+    return (root / cleaned).exists()
+
+
 def auto_detect_lang_name(args) -> str | None:
-    """Auto-detect language using the most relevant root for this command."""
+    """Auto-detect an analyzer using the most relevant root for this command."""
     root = resolve_detection_root(args)
     detected = lang_api.auto_detect_lang(root)
     if detected is None and root != PROJECT_ROOT:
@@ -106,7 +124,7 @@ def auto_detect_lang_name(args) -> str | None:
 
 
 def resolve_lang(args) -> LangConfig | None:
-    """Resolve language config from args, with auto-detection fallback."""
+    """Resolve analyzer config from args, with auto-detection fallback."""
     lang_name = getattr(args, "lang", None)
     if lang_name is None:
         lang_name = auto_detect_lang_name(args)
@@ -116,7 +134,7 @@ def resolve_lang(args) -> LangConfig | None:
         return lang_api.get_lang(lang_name)
     except ValueError as exc:
         langs = lang_api.available_langs()
-        langs_str = ", ".join(langs) if langs else "registered language plugins"
+        langs_str = ", ".join(langs) if langs else "supported analyzers"
         raise LangResolutionError(
             f"{exc}\n  Hint: use --lang to select manually (available: {langs_str})"
         ) from exc

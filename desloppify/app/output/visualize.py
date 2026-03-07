@@ -38,7 +38,7 @@ __all__ = ["D3_CDN_URL", "cmd_viz", "cmd_tree"]
 
 
 def _resolve_visualization_lang(path: Path, lang):
-    """Resolve language config for visualization if not already provided."""
+    """Resolve analyzer config for visualization if not already provided."""
     if lang:
         return lang
     from desloppify.languages import auto_detect_lang, get_lang
@@ -58,7 +58,7 @@ def _resolve_visualization_lang(path: Path, lang):
             if not warned:
                 warned = True
                 warn_best_effort(
-                    "Could not auto-detect language plugins for visualization; "
+                    "Could not auto-detect an analyzer for visualization; "
                     f"using fallback source discovery ({type(exc).__name__}: {exc})."
                 )
             continue
@@ -74,7 +74,7 @@ def _resolve_visualization_lang(path: Path, lang):
                 if not warned:
                     warned = True
                     warn_best_effort(
-                        "Visualization language plugin failed to load; using fallback source discovery "
+                        "Visualization analyzer failed to load; using fallback source discovery "
                         f"({type(exc).__name__}: {exc})."
                     )
                 continue
@@ -82,7 +82,7 @@ def _resolve_visualization_lang(path: Path, lang):
 
 
 def _fallback_source_files(path: Path) -> list[str]:
-    """Collect source files using extensions from all registered language plugins."""
+    """Collect source files using extensions from all registered analyzers."""
     from desloppify.core.discovery_api import find_source_files
     from desloppify.languages import available_langs, get_lang
 
@@ -100,7 +100,7 @@ def _fallback_source_files(path: Path) -> list[str]:
             if not warned:
                 warned = True
                 warn_best_effort(
-                    "Some language plugins could not be loaded for visualization fallback; using available plugins only "
+                    "Some analyzers could not be loaded for visualization fallback; using available analyzers only "
                     f"({type(exc).__name__}: {exc})."
                 )
             continue

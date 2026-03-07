@@ -42,6 +42,9 @@ _cfg = generic_lang(
     depth="shallow",
     detect_markers=[
         "Package.swift",
+        "Podfile",
+        "*.xcodeproj",
+        "*.xcworkspace",
         # KMP iOS entry points
         "iosApp/",
         "iosMain/",

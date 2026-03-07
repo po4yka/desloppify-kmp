@@ -36,7 +36,7 @@ def get_default_path() -> Path:
 
 
 def get_src_path() -> Path:
-    """Return TypeScript source root, honoring path API overrides."""
+    """Return the configured source root, honoring path API overrides."""
     if SRC_PATH is not _SRC_PATH_SENTINEL and isinstance(SRC_PATH, Path | str):
         return Path(SRC_PATH).resolve()
     return get_project_root() / os.environ.get("DESLOPPIFY_SRC", "src")

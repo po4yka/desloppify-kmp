@@ -511,9 +511,9 @@ subcommands:
         epilog="""\
 examples:
   desloppify plan move security top                    # prioritize a detector
-  desloppify plan move "unused::src/foo.ts::*" top     # prioritize by pattern
-  desloppify plan move smells bottom                   # deprioritize smells
-  desloppify plan move unused before security          # move before another""",
+  desloppify plan move "compose_smells::composeApp/src/commonMain/kotlin/HomeScreen.kt::*" top
+  desloppify plan move build_config bottom             # deprioritize detector
+  desloppify plan move compose_smells before security  # move before another""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p_move.add_argument(
@@ -597,9 +597,9 @@ examples:
         help="Mark findings as fixed (shows score movement + next step)",
         epilog="""\
 examples:
-  desloppify plan done "unused::src/foo.tsx::React" \\
-    --attest "I have actually removed the import and I am not gaming the score."
-  desloppify plan done security --note "patched XSS" \\
+  desloppify plan done "compose_smells::composeApp/src/commonMain/kotlin/HomeScreen.kt::state_hoisting" \\
+    --attest "I have actually hoisted the state and I am not gaming the score."
+  desloppify plan done security --note "removed platform API from commonMain" \\
     --attest "I have actually ..."  """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -681,22 +681,22 @@ def _add_dev_parser(sub) -> None:
     p_dev = sub.add_parser("dev", help="Developer utilities")
     dev_sub = p_dev.add_subparsers(dest="dev_action", required=True)
     d_scaffold = dev_sub.add_parser(
-        "scaffold-lang", help="Generate a standardized language plugin scaffold"
+        "scaffold-lang", help="Internal utility: scaffold an analyzer package"
     )
-    d_scaffold.add_argument("name", type=str, help="Language name (snake_case)")
+    d_scaffold.add_argument("name", type=str, help="Analyzer name (snake_case)")
     d_scaffold.add_argument(
         "--extension",
         action="append",
         default=None,
         metavar="EXT",
-        help="Source file extension (repeatable, e.g. --extension .go --extension .gomod)",
+        help="Source file extension (repeatable, e.g. --extension .kt --extension .swift)",
     )
     d_scaffold.add_argument(
         "--marker",
         action="append",
         default=None,
         metavar="FILE",
-        help="Project-root detection marker file (repeatable)",
+        help="Project-root detection marker or glob (repeatable)",
     )
     d_scaffold.add_argument(
         "--default-src",
@@ -718,7 +718,7 @@ def _add_dev_parser(sub) -> None:
 
 
 def _add_langs_parser(sub) -> None:
-    sub.add_parser("langs", help="List all available language plugins with depth and tools")
+    sub.add_parser("langs", help="List supported Kotlin/Swift analyzers and capabilities")
 
 
 def _add_update_skill_parser(sub) -> None:

@@ -23,9 +23,9 @@ This is the thing we care about most. If an agent can game the score to 100 with
 - Subjective assessments are cross-checked — if scores land suspiciously close to targets, they get flagged or reset
 - Subjective findings are weighted heavily (60% of total) because that's where real quality lives
 
-## Language-agnostic
+## KMP-first, still analyzer-based
 
-The scoring model and the core engine don't know about any specific language. Language-specific stuff lives in plugins. The principles and scoring intent stay the same whether you're scanning TypeScript, Python, or Rust. Currently 28 languages, and the plugin framework makes adding more straightforward.
+The scoring model and the core engine stay generic, but the product scope is not. Desloppify is deliberately focused on Kotlin Multiplatform, Compose Multiplatform, Android, and native iOS. Language-specific behavior lives in analyzers, and today that means Kotlin for shared/Android/KMP code and Swift for iOS host code.
 
 ## Architectural boundaries
 

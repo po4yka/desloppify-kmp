@@ -1,4 +1,4 @@
-"""langs command: list all available language plugins with depth and tools."""
+"""langs command: list supported analyzers and their capability depth."""
 
 from __future__ import annotations
 
@@ -34,14 +34,14 @@ def _depth_bar(depth: str) -> str:
 def _get_tool_labels(cfg: LangConfig) -> str:
     """Extract tool labels from phases."""
     if cfg.integration_depth == "full":
-        return "custom detectors"
+        return "native detectors"
     labels = [p.label for p in cfg.phases if p.label not in SHARED_PHASE_LABELS]
     suffix = " (auto-fix)" if cfg.fixers else ""
     return (", ".join(labels) if labels else "none") + suffix
 
 
 def cmd_langs(args: argparse.Namespace) -> None:
-    """List all available languages with depth and tool info."""
+    """List all registered analyzers with depth and tool info."""
     load_all()
 
     configs: list[tuple[str, LangConfig]] = []
@@ -65,7 +65,7 @@ def cmd_langs(args: argparse.Namespace) -> None:
     name_width = max(name_width, 14)
 
     print()
-    header = f"{'Language':<{name_width}}{'Depth':<14}Tools"
+    header = f"{'Analyzer':<{name_width}}{'Depth':<14}Detectors"
     print(colorize(header, "bold"))
     print("\u2500" * 60)
 

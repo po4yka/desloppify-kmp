@@ -49,7 +49,7 @@ setup & admin:
   zone       Show/set zone classifications
   config     Project configuration
   viz        Interactive HTML treemap
-  langs      List language plugins
+  langs      List supported Kotlin/Swift analyzers
   dev        Developer utilities
   update-skill  Install/update agent skill document
 
@@ -59,9 +59,9 @@ examples:
   desloppify plan                        # full prioritized markdown
   desloppify plan queue                  # compact table of all items
   desloppify next --count 10             # top 10 queue items
-  desloppify show src/components/Modal.tsx
-  desloppify plan done "unused::src/foo.tsx::React" \\
-    --note "removed import" --attest "I have actually ..."
+  desloppify show composeApp/src/commonMain/kotlin/com/example/home/HomeScreen.kt
+  desloppify plan done "compose_smells::composeApp/src/commonMain/kotlin/HomeScreen.kt::state_hoisting" \\
+    --note "hoisted state out of the screen" --attest "I have actually ..."
   desloppify review --run-batches --parallel --scan-after-import
 """
 
@@ -84,11 +84,11 @@ def _cli_version_string() -> str:
 
 def create_parser(*, langs: list[str], detector_names: list[str]) -> argparse.ArgumentParser:
     """Build top-level CLI parser with all subcommands."""
-    lang_help = ", ".join(langs) if langs else "registered languages"
+    lang_help = ", ".join(langs) if langs else "supported analyzers"
 
     parser = _NoAbbrevArgumentParser(
         prog="desloppify",
-        description="Desloppify — codebase health tracker",
+        description="Desloppify — Android/iOS KMP codebase health tracker",
         epilog=USAGE_EXAMPLES,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -96,7 +96,7 @@ def create_parser(*, langs: list[str], detector_names: list[str]) -> argparse.Ar
         "--lang",
         type=str,
         default=None,
-        help=f"Language to scan ({lang_help}). Auto-detected if omitted.",
+        help=f"Analyzer to scan ({lang_help}). Auto-detected if omitted.",
     )
     parser.add_argument(
         "--exclude",

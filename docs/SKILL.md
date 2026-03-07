@@ -3,11 +3,12 @@
 ---
 name: desloppify
 description: >
-  Codebase health scanner and technical debt tracker. Use when the user asks
-  about code quality, technical debt, dead code, large files, god classes,
-  duplicate functions, code smells, naming issues, import cycles, or coupling
-  problems. Also use when asked for a health score, what to fix next, or to
-  create a cleanup plan. Supports 28 languages.
+  Android/iOS/KMP codebase health scanner and technical debt tracker. Use when
+  the user asks about code quality, technical debt, Compose smells,
+  expect/actual gaps, platform leakage, Gradle or Info.plist issues, dead
+  code, large files, duplicate functions, naming issues, import cycles, or
+  coupling problems in Kotlin Multiplatform, Compose Multiplatform, Android, or
+  native iOS codebases.
 allowed-tools: Bash(desloppify *)
 ---
 
@@ -15,11 +16,16 @@ allowed-tools: Bash(desloppify *)
 
 ## 1. Your Job
 
-Improve code quality by maximising the **strict score** honestly.
+Improve Android/iOS/KMP code quality by maximising the **strict score** honestly.
 
 **The main thing you do is run `desloppify next`** — it tells you exactly what to fix and how. Fix it, resolve it, run `next` again. Keep going.
 
 Follow the scan output's **INSTRUCTIONS FOR AGENTS** — don't substitute your own analysis.
+
+Supported analyzers:
+
+- `kotlin` for KMP shared code, Android source sets, Compose, Gradle, and `AndroidManifest.xml`
+- `swift` for native iOS modules, `Info.plist`, and Swift host-app quality checks
 
 ## 2. The Workflow
 
@@ -84,7 +90,7 @@ desloppify scan --path . --reset-subjective       # reset subjective baseline to
 
 Overall score = **40% mechanical** + **60% subjective**.
 
-- **Mechanical (40%)**: auto-detected issues — duplication, dead code, smells, unused imports, security. Fixed by changing code and rescanning.
+- **Mechanical (40%)**: auto-detected issues — duplication, dead code, smells, unused imports, security. On KMP/mobile projects this often means platform leakage, Compose smells, Gradle drift, Android manifest issues, or iOS configuration mistakes. Fixed by changing code and rescanning.
 - **Subjective (60%)**: design quality review — naming, error handling, abstractions, clarity. Starts at **0%** until reviewed. The scan will prompt you when a review is needed.
 - **Strict score** is the north star: wontfix items count as open. The gap between overall and strict is your wontfix debt.
 - **Score types**: overall (lenient), strict (wontfix counts), objective (mechanical only), verified (confirmed fixes only).

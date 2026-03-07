@@ -90,7 +90,7 @@ examples:
         action="append",
         default=None,
         metavar="KEY=VALUE",
-        help="Language runtime option override (repeatable, e.g. --lang-opt roslyn_cmd='dotnet run ...')",
+        help="Analyzer runtime option override (repeatable, e.g. --lang-opt key=value)",
     )
 
 
@@ -129,8 +129,8 @@ def _add_show_parser(sub) -> None:
         help="Dig into findings by file, directory, detector, or ID",
         epilog="""\
 examples:
-  desloppify show src/components/Modal.tsx
-  desloppify show unused --top 50
+  desloppify show composeApp/src/commonMain/kotlin/com/example/home/HomeScreen.kt
+  desloppify show compose_smells --top 50
   desloppify show --chronic
   desloppify show --status all""",
         formatter_class=argparse.RawDescriptionHelpFormatter,

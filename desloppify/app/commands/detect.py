@@ -44,10 +44,10 @@ def cmd_detect(args: argparse.Namespace) -> None:
     lang_cfg = resolve_lang(args)
 
     if not lang_cfg:
-        langs = ", ".join(lang_api.available_langs()) or "registered language plugins"
+        langs = ", ".join(lang_api.available_langs()) or "supported analyzers"
         print(
             colorize(
-                f"No language specified. Use --lang <name> (available: {langs}).", "red"
+                f"No analyzer selected. Use --lang <name> (available: {langs}).", "red"
             ),
             file=sys.stderr,
         )
