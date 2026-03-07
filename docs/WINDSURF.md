@@ -2,6 +2,7 @@
 
 Windsurf does not support spawning subagents from within a Cascade session.
 Parallel reviews require the user to open multiple Cascade panes manually.
+Use this overlay for Android/iOS/KMP repositories.
 
 ### Review workflow
 
@@ -46,7 +47,7 @@ in one session. This is slower but still works.
       "dimension": "naming_quality",
       "identifier": "short_id",
       "summary": "one-line defect summary",
-      "related_files": ["relative/path/to/file.py"],
+      "related_files": ["composeApp/src/androidMain/kotlin/com/example/MainActivity.kt"],
       "evidence": ["specific code observation"],
       "suggestion": "concrete fix recommendation",
       "confidence": "high|medium|low"

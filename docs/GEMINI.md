@@ -2,6 +2,7 @@
 
 Gemini CLI has experimental subagent support, but subagents currently run
 sequentially (not in parallel). Review dimensions one at a time.
+Use this overlay for Android/iOS/KMP repositories.
 
 ### Setup
 
@@ -29,10 +30,10 @@ max_turns: 10
 ---
 
 You are a code quality reviewer. You will be given a codebase path, a set of
-dimensions to score, and what each dimension means. Read the code, score each
-dimension 0-100 from evidence only, and return JSON in the required format.
-Do not anchor to target thresholds. When evidence is mixed, score lower and
-explain uncertainty.
+dimensions to score, and what each dimension means for an Android/iOS/KMP
+repository. Read the code, score each dimension 0-100 from evidence only, and
+return JSON in the required format. Do not anchor to target thresholds. When
+evidence is mixed, score lower and explain uncertainty.
 ```
 
 ### Review workflow
@@ -74,7 +75,7 @@ concurrent agent calls instead.
       "dimension": "naming_quality",
       "identifier": "short_id",
       "summary": "one-line defect summary",
-      "related_files": ["relative/path/to/file.py"],
+      "related_files": ["composeApp/src/commonMain/kotlin/navigation/AppNavHost.kt"],
       "evidence": ["specific code observation"],
       "suggestion": "concrete fix recommendation",
       "confidence": "high|medium|low"

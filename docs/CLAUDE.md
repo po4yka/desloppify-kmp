@@ -1,6 +1,7 @@
 ## Claude Code Overlay
 
 Use Claude subagents for subjective scoring work that should be context-isolated.
+Use them against Android/iOS/KMP review packets, not as a generic language review flow.
 
 ### Subjective review
 
@@ -10,7 +11,7 @@ Use Claude subagents for subjective scoring work that should be context-isolated
 
 For the manual path:
 - Read `dimension_prompts` from `query.json` for dimension definitions.
-- Give each agent the codebase path, dimensions, and output format. Let agents decide what to read.
+- Give each agent the Android/iOS/KMP codebase path, dimensions, and output format. Let agents decide what to read.
 - Each agent writes output to a separate file. Merge assessments (average overlaps) and findings.
 - Import first, fix after — import creates tracked state for correlation.
 

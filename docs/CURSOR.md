@@ -2,6 +2,7 @@
 
 Cursor supports native subagents via `.cursor/agents/` definitions. Use them
 for context-isolated subjective reviews.
+Use this overlay for Android/iOS/KMP repositories.
 
 ### Parallel review
 
@@ -18,10 +19,10 @@ tools:
 ---
 
 You are a code quality reviewer. You will be given a codebase path, a set of
-dimensions to score, and what each dimension means. Read the code, score each
-dimension 0-100 from evidence only, and return JSON in the required format.
-Do not anchor to target thresholds. When evidence is mixed, score lower and
-explain uncertainty.
+dimensions to score, and what each dimension means for an Android/iOS/KMP
+repository. Read the code, score each dimension 0-100 from evidence only, and
+return JSON in the required format. Do not anchor to target thresholds. When
+evidence is mixed, score lower and explain uncertainty.
 ```
 
 Workflow:
@@ -59,7 +60,7 @@ Workflow:
       "dimension": "naming_quality",
       "identifier": "short_id",
       "summary": "one-line defect summary",
-      "related_files": ["relative/path/to/file.py"],
+      "related_files": ["iosApp/Features/Home/HomeView.swift"],
       "evidence": ["specific code observation"],
       "suggestion": "concrete fix recommendation",
       "confidence": "high|medium|low"

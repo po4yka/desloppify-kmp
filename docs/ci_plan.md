@@ -1,6 +1,6 @@
 # CI/CD Plan
 
-This document defines the repository CI/CD operating model and required checks.
+This document defines the repository CI/CD operating model and required checks for the Python CLI that ships the Android/iOS/KMP analyzers.
 
 ## Goals
 

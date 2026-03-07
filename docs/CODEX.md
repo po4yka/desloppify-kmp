@@ -1,10 +1,11 @@
 ## Codex Overlay
 
 This is the canonical Codex overlay used by the README install command.
+Use it for Android/iOS/KMP review packets only.
 
 1. Prefer first-class batch runs: `desloppify review --run-batches --runner codex --parallel --scan-after-import`.
 2. The command writes immutable packet snapshots under `.desloppify/review_packets/holistic_packet_*.json`; use those for reproducible retries.
-3. Keep reviewer input scoped to the immutable packet and the source files named in each batch.
+3. Keep reviewer input scoped to the immutable packet and the Android/iOS/KMP source files named in each batch.
 4. Do not use prior chat context, score history, narrative summaries, issue labels, or target-threshold anchoring while scoring.
 5. Assess every dimension listed in `query.dimensions`; never drop a requested dimension. If evidence is weak/mixed, score lower and explain uncertainty in findings.
 6. Return machine-readable JSON only for review imports. For Claude session submit (`--external-submit`), include `session` from the generated template:
@@ -23,7 +24,7 @@ This is the canonical Codex overlay used by the README install command.
       "dimension": "<dimension_from_query>",
       "identifier": "short_id",
       "summary": "one-line defect summary",
-      "related_files": ["relative/path/to/file.py"],
+      "related_files": ["composeApp/src/commonMain/kotlin/ui/HomeScreen.kt"],
       "evidence": ["specific code observation"],
       "suggestion": "concrete fix recommendation",
       "confidence": "high|medium|low"

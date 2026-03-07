@@ -2,6 +2,7 @@
 
 VS Code Copilot supports native subagents via `.github/agents/` definitions.
 Use them for context-isolated subjective reviews.
+Use this overlay for Android/iOS/KMP repositories.
 
 ### Subjective review
 
@@ -17,10 +18,10 @@ name: desloppify-reviewer
 tools: ['read', 'search']
 ---
 You are a code quality reviewer. You will be given a codebase path, a set of
-dimensions to score, and what each dimension means. Read the code, score each
-dimension 0-100 from evidence only, and return JSON in the required format.
-Do not anchor to target thresholds. When evidence is mixed, score lower and
-explain uncertainty.
+dimensions to score, and what each dimension means for an Android/iOS/KMP
+repository. Read the code, score each dimension 0-100 from evidence only, and
+return JSON in the required format. Do not anchor to target thresholds. When
+evidence is mixed, score lower and explain uncertainty.
 ```
 
 And an orchestrator in `.github/agents/desloppify-review-orchestrator.md`:

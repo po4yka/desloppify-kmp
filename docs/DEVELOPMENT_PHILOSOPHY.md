@@ -27,6 +27,8 @@ This is the thing we care about most. If an agent can game the score to 100 with
 
 The scoring model and the core engine stay generic, but the product scope is not. Desloppify is deliberately focused on Kotlin Multiplatform, Compose Multiplatform, Android, and native iOS. Language-specific behavior lives in analyzers, and today that means Kotlin for shared/Android/KMP code and Swift for iOS host code.
 
+We are not trying to grow this into a universal scanner again. Shared internals are acceptable; public messaging, defaults, examples, and shipped analyzers stay mobile-first.
+
 ## Architectural boundaries
 
 We keep a few rules concrete so the codebase stays workable as it grows:

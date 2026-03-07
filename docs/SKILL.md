@@ -18,6 +18,8 @@ allowed-tools: Bash(desloppify *)
 
 Improve Android/iOS/KMP code quality by maximising the **strict score** honestly.
 
+This skill is scoped to Kotlin Multiplatform, Android, Compose, and native iOS repositories. Do not use it as a general backend/frontend scanner.
+
 **The main thing you do is run `desloppify next`** — it tells you exactly what to fix and how. Fix it, resolve it, run `next` again. Keep going.
 
 Follow the scan output's **INSTRUCTIONS FOR AGENTS** — don't substitute your own analysis.
