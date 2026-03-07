@@ -20,52 +20,52 @@ def test_server_only_path_empty():
 
 def test_server_only_path_api_dir():
     """Paths containing /api/ are server-only."""
-    assert is_server_only_path("src/api/handler.ts") is True
+    assert is_server_only_path("backend/api/SyncRoute.kt") is True
 
 
 def test_server_only_path_server_dir():
     """Paths containing /server/ are server-only."""
-    assert is_server_only_path("project/server/index.ts") is True
+    assert is_server_only_path("tools/server/bootstrap.swift") is True
 
 
 def test_server_only_path_backend_dir():
     """Paths containing /backend/ are server-only."""
-    assert is_server_only_path("backend/routes.py") is True
+    assert is_server_only_path("backend/routes/SyncCoordinator.kt") is True
 
 
 def test_server_only_path_functions_dir():
     """Paths containing /functions/ are server-only."""
-    assert is_server_only_path("supabase/functions/hello/index.ts") is True
+    assert is_server_only_path("cloud/functions/sync/main.kt") is True
 
 
-def test_server_only_path_supabase_functions():
-    """Paths containing /supabase/functions/ are server-only."""
-    assert is_server_only_path("supabase/functions/auth/index.ts") is True
+def test_server_only_path_fastlane_dir():
+    """Paths containing /fastlane/ are delivery automation paths."""
+    assert is_server_only_path("ios/fastlane/Fastfile") is True
 
 
 def test_server_only_path_scripts_dir():
     """Paths containing /scripts/ are server-only."""
-    assert is_server_only_path("scripts/deploy.sh") is True
+    assert is_server_only_path("scripts/release_kmp.sh") is True
 
 
 def test_server_only_path_client_code():
     """Client-side paths are not server-only."""
-    assert is_server_only_path("src/components/Button.tsx") is False
+    assert is_server_only_path("composeApp/src/commonMain/kotlin/ui/Button.kt") is False
 
 
 def test_server_only_path_backslash_normalized():
     """Backslashes are normalized to forward slashes."""
-    assert is_server_only_path("project\\api\\handler.ts") is True
+    assert is_server_only_path("project\\api\\SyncRoute.kt") is True
 
 
 def test_server_only_path_no_leading_slash():
     """Paths without leading slash still match (prefix is added)."""
-    assert is_server_only_path("api/handler.ts") is True
+    assert is_server_only_path("api/SyncRoute.kt") is True
 
 
 def test_server_only_path_absolute():
     """Absolute paths work correctly."""
-    assert is_server_only_path("/home/user/project/server/app.py") is True
+    assert is_server_only_path("/home/user/project/server/bootstrap.swift") is True
 
 
 # ── DEPRECATION_MARKER_RE ────────────────────────────────────────────
@@ -98,32 +98,32 @@ def test_deprecation_marker_word_boundary():
 
 def test_migration_todo_basic():
     """Matches TODO with migration keywords."""
-    assert MIGRATION_TODO_RE.search("TODO: migrate to new API") is not None
+    assert MIGRATION_TODO_RE.search("TODO: migrate to new shared API") is not None
 
 
 def test_migration_todo_fixme_legacy():
     """Matches FIXME with legacy keyword."""
-    assert MIGRATION_TODO_RE.search("FIXME: legacy code needs rewrite") is not None
+    assert MIGRATION_TODO_RE.search("FIXME: legacy iOS bridge needs rewrite") is not None
 
 
 def test_migration_todo_hack_deprecated():
     """Matches HACK with deprecated keyword."""
-    assert MIGRATION_TODO_RE.search("HACK: deprecated method used here") is not None
+    assert MIGRATION_TODO_RE.search("HACK: deprecated view controller used here") is not None
 
 
 def test_migration_todo_remove_after():
     """Matches TODO with remove-after pattern."""
-    assert MIGRATION_TODO_RE.search("TODO remove after v3 release") is not None
+    assert MIGRATION_TODO_RE.search("TODO remove after iOS 18 rollout") is not None
 
 
 def test_migration_todo_no_migration_keyword():
     """Does not match TODO without migration-related keywords."""
-    assert MIGRATION_TODO_RE.search("TODO: fix the button color") is None
+    assert MIGRATION_TODO_RE.search("TODO: fix the top app bar color") is None
 
 
 def test_migration_todo_case_insensitive():
     """Match is case-insensitive for migration keywords."""
-    assert MIGRATION_TODO_RE.search("TODO: MIGRATE to new system") is not None
+    assert MIGRATION_TODO_RE.search("TODO: MIGRATE to new shared module") is not None
 
 
 # ── SERVICE_ROLE_TOKEN_RE ─────────────────────────────────────────────
@@ -131,22 +131,27 @@ def test_migration_todo_case_insensitive():
 
 def test_service_role_camel_case():
     """Matches serviceRole and serviceRoleKey."""
-    assert SERVICE_ROLE_TOKEN_RE.search("const serviceRoleKey = '...'") is not None
+    assert SERVICE_ROLE_TOKEN_RE.search("let serviceRoleKey = credential") is not None
 
 
 def test_service_role_snake_case():
     """Matches service_role and service_role_key."""
-    assert SERVICE_ROLE_TOKEN_RE.search("service_role_key = env('...')") is not None
+    assert SERVICE_ROLE_TOKEN_RE.search('val service_role_key = env("...")') is not None
 
 
 def test_service_role_env_var():
     """Matches SUPABASE_SERVICE_ROLE_KEY."""
-    assert SERVICE_ROLE_TOKEN_RE.search("SUPABASE_SERVICE_ROLE_KEY") is not None
+    assert (
+        SERVICE_ROLE_TOKEN_RE.search(
+            'Bundle.main.object(forInfoDictionaryKey: "SUPABASE_SERVICE_ROLE_KEY")'
+        )
+        is not None
+    )
 
 
 def test_service_role_no_match():
     """Does not match unrelated text."""
-    assert SERVICE_ROLE_TOKEN_RE.search("const userRole = 'admin'") is None
+    assert SERVICE_ROLE_TOKEN_RE.search('let userRole = "admin"') is None
 
 
 def test_service_role_case_insensitive():

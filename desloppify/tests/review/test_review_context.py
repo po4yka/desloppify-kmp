@@ -342,30 +342,32 @@ class TestGatherAuthContext:
     def test_service_role_detection(self):
         """Files with both service_role AND createClient should be flagged."""
         content = textwrap.dedent("""\
-            const client = createClient(url, key);
-            const admin = createClient(url, service_role);
+            val client = createClient(url, key)
+            val admin = createClient(url, service_role)
         """)
-        result = _gather_auth_context({"/src/admin.ts": content})
+        result = _gather_auth_context({"/androidApp/src/main/kotlin/AdminClient.kt": content})
         assert "service_role_usage" in result
-        assert "admin.ts" in result["service_role_usage"]
+        assert "AdminClient.kt" in result["service_role_usage"]
 
     def test_service_role_without_create_client_not_flagged(self):
         """service_role mention without createClient should NOT be flagged."""
-        content = "const key = process.env.SERVICE_ROLE;\n"
-        result = _gather_auth_context({"/src/config.ts": content})
+        content = 'val key = System.getenv("SERVICE_ROLE")\n'
+        result = _gather_auth_context({"/shared/src/commonMain/kotlin/Secrets.kt": content})
         assert "service_role_usage" not in result
 
     def test_service_role_variants(self):
         """All service_role naming variants should be detected."""
         for variant in ["service_role", "SERVICE_ROLE", "serviceRole"]:
-            content = f"const x = createClient(url, {variant});\n"
-            result = _gather_auth_context({f"/src/{variant}.ts": content})
+            content = f"val admin = createClient(url, {variant})\n"
+            result = _gather_auth_context(
+                {f"/androidApp/src/main/kotlin/{variant}.kt": content}
+            )
             assert "service_role_usage" in result, f"Failed for variant: {variant}"
 
     def test_service_role_on_server_path_not_flagged(self):
         """Server-only paths should not be counted as service-role client usage."""
-        content = "const admin = createClient(url, service_role);\n"
-        result = _gather_auth_context({"/functions/admin.ts": content})
+        content = "service_role\ncreateClient(url, key)\n"
+        result = _gather_auth_context({"/fastlane/Fastfile": content})
         assert "service_role_usage" not in result
 
     def test_auth_pattern_counting(self):

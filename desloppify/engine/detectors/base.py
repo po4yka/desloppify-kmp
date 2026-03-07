@@ -27,7 +27,8 @@ class ClassInfo:
     """Extracted class/component info for cross-language analysis.
 
     For OOP classes: methods/attributes/base_classes are populated directly.
-    For React components: metrics holds hook counts (context_hooks, use_effects, etc.).
+    For UI components: metrics may hold framework-specific counters such as
+    hooks, lifecycle callbacks, or state-related signals.
     """
 
     name: str

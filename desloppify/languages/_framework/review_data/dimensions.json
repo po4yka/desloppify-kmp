@@ -225,7 +225,7 @@
         "Style islands: one directory uses a completely different pattern than the rest",
         "Sibling modules following different behavioral protocols (e.g. most call a shared function, one doesn't)",
         "Inconsistent plugin organization: sibling plugins structured differently",
-        "Large __init__.py re-export surfaces that obscure internal module structure"
+        "Overgrown platform facade files (for example Platform.kt or AppDelegate.swift) that obscure ownership"
       ],
       "skip": [
         "Intentional variation for different module types (config vs logic)",
@@ -233,17 +233,17 @@
       ]
     },
     "dependency_health": {
-      "description": "Unused deps, version conflicts, multiple libs for same purpose, heavy deps",
+      "description": "Unused deps, Gradle/SPM/CocoaPods drift, multiple libs for same purpose, heavy deps",
       "look_for": [
-        "Multiple libraries for the same purpose (e.g. moment + dayjs, axios + fetch wrapper)",
-        "Heavy dependencies pulled in for light use (e.g. lodash for one function)",
+        "Multiple libraries for the same purpose (for example two DI stacks, two image loaders, or multiple date/time libraries)",
+        "Heavy dependencies pulled in for light use",
         "Circular dependency cycles visible in the import graph",
-        "Unused dependencies in package.json/requirements.txt",
-        "Version conflicts or pinning issues visible in lock files"
+        "Unused dependencies in Gradle version catalogs, build.gradle(.kts), Package.swift, Podfile, or lockfiles",
+        "Version conflicts or pinning drift visible in libs.versions.toml, Package.resolved, Podfile.lock, or Gradle lockfiles"
       ],
       "skip": [
-        "Dev dependencies (test, build, lint tools)",
-        "Peer dependencies required by frameworks"
+        "Test/build/lint dependencies",
+        "Platform-specific dependencies that are intentionally isolated to androidMain or iosMain"
       ]
     },
     "test_strategy": {
@@ -264,38 +264,38 @@
       "description": "Inconsistent API shapes, mixed sync/async, overloaded interfaces",
       "look_for": [
         "Inconsistent API shapes: similar functions with different parameter ordering or naming",
-        "Mixed sync/async in the same module's public API",
+        "Mixed suspend/callback/closure styles in the same module's public API",
         "Overloaded interfaces: one function doing too many things based on argument types",
         "Missing error contracts: no documentation or types indicating what can fail",
         "Public functions with >5 parameters (API boundary may be wrong)"
       ],
       "skip": [
         "Internal/private APIs where flexibility is acceptable",
-        "Framework-imposed patterns (React hooks must follow rules of hooks)"
+        "Framework-imposed lifecycle or callback shapes in Compose, SwiftUI, UIKit, or Android components"
       ]
     },
     "authorization_consistency": {
-      "description": "Auth/permission patterns consistently applied across the codebase",
+      "description": "Permission, token, and privileged-action patterns consistently applied across mobile modules",
       "look_for": [
-        "Route handlers with auth decorators/middleware on some siblings but not others",
-        "RLS enabled on some tables but not siblings in the same domain",
-        "Permission strings as magic literals instead of shared constants",
-        "Mixed trust boundaries: some endpoints validate user input, siblings don't",
-        "Service role / admin bypass without audit logging or access control"
+        "Privileged/debug/admin flows exposed in some sibling screens or actions but not guarded in others",
+        "Token or credential access handled through secure storage in some modules and plain preferences/files in others",
+        "Permission strings or entitlement keys as magic literals instead of shared constants",
+        "Some network clients consistently inject auth/session state while sibling clients bypass that pattern",
+        "High-privilege keys or elevated modes shipped into app code without an explicit boundary"
       ],
       "skip": [
-        "Public routes explicitly documented as unauthenticated (health checks, login, webhooks)",
-        "Internal service-to-service calls behind network-level auth",
-        "Dev/test endpoints behind feature flags or environment checks"
+        "Unauthenticated onboarding or public marketing flows that are explicitly documented",
+        "Simulator/test-only code behind build flags",
+        "Platform permission prompts or OS callbacks that are framework-required"
       ]
     },
     "incomplete_migration": {
       "description": "Old+new API coexistence, deprecated-but-called symbols, stale migration shims",
       "look_for": [
-        "Old and new API patterns coexisting: class+functional components, axios+fetch, moment+dayjs",
+        "Old and new UI/runtime patterns coexisting: Fragments + Compose, UIKit + SwiftUI, callbacks + coroutines",
         "Deprecated symbols still called by active code (@deprecated, DEPRECATED markers)",
         "Compatibility shims that no caller actually needs anymore",
-        "Mixed JS/TS files for the same module (incomplete TypeScript migration)",
+        "Mixed Java/Kotlin or legacy Objective-C/Swift host seams that no longer need to coexist",
         "Stale migration TODOs: TODO/FIXME referencing 'migrate', 'legacy', 'old api', 'remove after'"
       ],
       "skip": [
@@ -317,7 +317,7 @@
       "skip": [
         "Root-level files that ARE genuinely core — high fan-in (≥5 importers), imported across multiple subdirectories (cli.py, state.py, utils.py, config.py)",
         "Small projects (<20 files) where flat structure is appropriate",
-        "Framework-imposed directory layouts (src/, lib/, dist/, __pycache__/)",
+        "Framework-imposed directory layouts (composeApp/, androidApp/, iosApp/, build/, Pods/, DerivedData/)",
         "Test directories mirroring production structure",
         "Aesthetic preferences without measurable navigation, ownership, or coupling impact"
       ]

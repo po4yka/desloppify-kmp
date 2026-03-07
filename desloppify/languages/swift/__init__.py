@@ -188,3 +188,9 @@ for _i, _p in enumerate(_cfg.phases):
 
 for _offset, _phase in enumerate(_ios_phases):
     _cfg.phases.insert(_insert_idx + _offset, _phase)
+
+
+from desloppify.hook_registry import register_lang_hooks  # noqa: E402
+from desloppify.languages.swift import test_coverage as _tc  # noqa: E402
+
+register_lang_hooks("swift", test_coverage=_tc)

@@ -16,6 +16,22 @@ def _load_lang_test_coverage_module(lang_name: str):
     return get_lang_hook(lang_name, "test_coverage") or object()
 
 
+def _call_testable_logic_hook(hook, filepath: str, content: str) -> bool:
+    """Call testability hooks with compatibility for older one-arg signatures."""
+    try:
+        return bool(hook(filepath, content))
+    except TypeError:
+        return bool(hook(content))
+
+
+def _call_runtime_entrypoint_hook(hook, filepath: str, content: str) -> bool:
+    """Call runtime-entrypoint hooks with compatibility fallbacks."""
+    try:
+        return bool(hook(filepath, content))
+    except TypeError:
+        return bool(hook(content))
+
+
 def _has_testable_logic(filepath: str, lang_name: str) -> bool:
     """Check whether a file contains runtime logic worth testing."""
     read_result = read_coverage_file(filepath, context="testable_logic")
@@ -26,7 +42,7 @@ def _has_testable_logic(filepath: str, lang_name: str) -> bool:
     mod = _load_lang_test_coverage_module(lang_name)
     has_logic = getattr(mod, "has_testable_logic", None)
     if callable(has_logic):
-        return bool(has_logic(filepath, content))
+        return _call_testable_logic_hook(has_logic, filepath, content)
     return True
 
 
@@ -41,7 +57,7 @@ def _is_runtime_entrypoint(filepath: str, lang_name: str) -> bool:
     hook = getattr(mod, "is_runtime_entrypoint", None)
     if callable(hook):
         try:
-            return bool(hook(filepath, content))
+            return _call_runtime_entrypoint_hook(hook, filepath, content)
         except (TypeError, ValueError):
             LOGGER.debug(
                 "runtime_entrypoint hook failed for %s", filepath, exc_info=True
@@ -49,13 +65,23 @@ def _is_runtime_entrypoint(filepath: str, lang_name: str) -> bool:
 
     lowered_path = filepath.replace("\\", "/").lower()
     lowered = content.lower()
-    if lang_name == "typescript":
-        if "/supabase/functions/" in lowered_path and lowered_path.endswith("/index.ts"):
+    if lang_name == "kotlin":
+        if lowered_path.endswith("/main.kt") and "fun main(" in lowered:
             return True
-        if "serve((" in lowered or "serve (" in lowered:
-            if (
-                "deno.land/std/http/server" in lowered
-                or "jsr:@std/http/server" in lowered
-            ):
-                return True
+        if lowered_path.endswith("/mainactivity.kt") and (
+            "componentactivity" in lowered or "setcontent" in lowered
+        ):
+            return True
+        if "/androidmain/" in lowered_path and (
+            "componentactivity" in lowered or ": application" in lowered
+        ):
+            return True
+    if lang_name == "swift":
+        filename = lowered_path.rsplit("/", 1)[-1]
+        if filename in {"appdelegate.swift", "scenedelegate.swift"}:
+            return True
+        if "@main" in lowered and ("struct" in lowered or "class" in lowered):
+            return True
+        if "uiapplicationmain" in lowered:
+            return True
     return False

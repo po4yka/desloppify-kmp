@@ -97,8 +97,8 @@ def test_quality_threshold_unknown_returns_low_default():
 def test_normalize_graph_paths_converts_absolute_to_relative():
     root = str(discovery_mod.PROJECT_ROOT)
     sep = os.sep
-    abs_key = root + sep + "src" + sep + "module.py"
-    abs_import = root + sep + "src" + sep + "other.py"
+    abs_key = root + sep + "src" + sep + "module.kt"
+    abs_import = root + sep + "src" + sep + "other.kt"
 
     graph = {
         abs_key: {
@@ -109,16 +109,16 @@ def test_normalize_graph_paths_converts_absolute_to_relative():
 
     result = discovery_mod._normalize_graph_paths(graph)
 
-    expected_key = "src" + sep + "module.py"
-    expected_import = "src" + sep + "other.py"
+    expected_key = "src" + sep + "module.kt"
+    expected_import = "src" + sep + "other.kt"
     assert expected_key in result
     assert expected_import in result[expected_key]["imports"]
 
 
 def test_normalize_graph_paths_skips_already_relative():
     graph = {
-        "src/module.py": {
-            "imports": {"src/other.py"},
+        "src/module.kt": {
+            "imports": {"src/other.kt"},
             "importers": set(),
         }
     }
@@ -126,8 +126,8 @@ def test_normalize_graph_paths_skips_already_relative():
     result = discovery_mod._normalize_graph_paths(graph)
 
     # Should return the original graph (or identical copy)
-    assert "src/module.py" in result
-    assert "src/other.py" in result["src/module.py"]["imports"]
+    assert "src/module.kt" in result
+    assert "src/other.kt" in result["src/module.kt"]["imports"]
 
 
 def test_normalize_graph_paths_empty_graph():
@@ -137,7 +137,7 @@ def test_normalize_graph_paths_empty_graph():
 def test_normalize_graph_paths_preserves_non_path_fields():
     root = str(discovery_mod.PROJECT_ROOT)
     sep = os.sep
-    abs_key = root + sep + "mod.py"
+    abs_key = root + sep + "mod.kt"
 
     graph = {
         abs_key: {
@@ -149,7 +149,7 @@ def test_normalize_graph_paths_preserves_non_path_fields():
 
     result = discovery_mod._normalize_graph_paths(graph)
 
-    norm_key = "mod.py"
+    norm_key = "mod.kt"
     assert result[norm_key]["importer_count"] == 5
     assert result[norm_key]["extra_data"] == "preserved"
 
@@ -158,7 +158,7 @@ def test_normalize_graph_paths_preserves_non_path_fields():
 
 
 def test_no_tests_findings_basic_untested_module(tmp_path):
-    f = tmp_path / "big_module.py"
+    f = tmp_path / "SharedSyncCoordinator.kt"
     f.write_text("\n".join(f"line {i}" for i in range(100)) + "\n")
     filepath = str(f)
 
@@ -169,7 +169,7 @@ def test_no_tests_findings_basic_untested_module(tmp_path):
     ), patch.object(
         discovery_mod, "_is_runtime_entrypoint", return_value=False
     ):
-        findings = discovery_mod._no_tests_findings({filepath}, graph, "python")
+        findings = discovery_mod._no_tests_findings({filepath}, graph, "kotlin")
 
     assert len(findings) == 1
     finding = findings[0]
@@ -181,7 +181,7 @@ def test_no_tests_findings_basic_untested_module(tmp_path):
 
 
 def test_no_tests_findings_critical_by_importers(tmp_path):
-    f = tmp_path / "hub.py"
+    f = tmp_path / "RepositoryHub.kt"
     f.write_text("\n".join(f"line {i}" for i in range(50)) + "\n")
     filepath = str(f)
 
@@ -192,7 +192,7 @@ def test_no_tests_findings_critical_by_importers(tmp_path):
     ), patch.object(
         discovery_mod, "_is_runtime_entrypoint", return_value=False
     ):
-        findings = discovery_mod._no_tests_findings({filepath}, graph, "python")
+        findings = discovery_mod._no_tests_findings({filepath}, graph, "kotlin")
 
     assert len(findings) == 1
     assert findings[0]["tier"] == 2
@@ -200,7 +200,7 @@ def test_no_tests_findings_critical_by_importers(tmp_path):
 
 
 def test_no_tests_findings_critical_by_complexity(tmp_path):
-    f = tmp_path / "complex.py"
+    f = tmp_path / "OfflinePipeline.kt"
     f.write_text("\n".join(f"line {i}" for i in range(50)) + "\n")
     filepath = str(f)
 
@@ -213,7 +213,7 @@ def test_no_tests_findings_critical_by_complexity(tmp_path):
         discovery_mod, "_is_runtime_entrypoint", return_value=False
     ):
         findings = discovery_mod._no_tests_findings(
-            {filepath}, graph, "python", complexity_map=complexity_map
+            {filepath}, graph, "kotlin", complexity_map=complexity_map
         )
 
     assert len(findings) == 1
@@ -223,7 +223,7 @@ def test_no_tests_findings_critical_by_complexity(tmp_path):
 
 
 def test_no_tests_findings_runtime_entrypoint(tmp_path):
-    f = tmp_path / "index.ts"
+    f = tmp_path / "MainActivity.kt"
     f.write_text("\n".join(f"line {i}" for i in range(50)) + "\n")
     filepath = str(f)
 
@@ -234,7 +234,7 @@ def test_no_tests_findings_runtime_entrypoint(tmp_path):
     ), patch.object(
         discovery_mod, "_is_runtime_entrypoint", return_value=True
     ):
-        findings = discovery_mod._no_tests_findings({filepath}, graph, "typescript")
+        findings = discovery_mod._no_tests_findings({filepath}, graph, "kotlin")
 
     assert len(findings) == 1
     assert findings[0]["name"] == "runtime_entrypoint_no_direct_tests"
@@ -246,7 +246,7 @@ def test_no_tests_findings_runtime_entrypoint(tmp_path):
 def test_no_tests_findings_sorted_by_loc_descending(tmp_path):
     files = []
     for i, loc in enumerate([10, 200, 50]):
-        f = tmp_path / f"mod_{i}.py"
+        f = tmp_path / f"mod_{i}.kt"
         f.write_text("\n".join(f"line {j}" for j in range(loc)) + "\n")
         files.append(str(f))
 
@@ -257,7 +257,7 @@ def test_no_tests_findings_sorted_by_loc_descending(tmp_path):
     ), patch.object(
         discovery_mod, "_is_runtime_entrypoint", return_value=False
     ):
-        findings = discovery_mod._no_tests_findings(set(files), graph, "python")
+        findings = discovery_mod._no_tests_findings(set(files), graph, "kotlin")
 
     locs = [finding["detail"]["loc"] for finding in findings]
     assert locs == sorted(locs, reverse=True)
@@ -269,7 +269,7 @@ def test_no_tests_findings_empty_scorable():
     ), patch.object(
         discovery_mod, "_is_runtime_entrypoint", return_value=False
     ):
-        findings = discovery_mod._no_tests_findings(set(), {}, "python")
+        findings = discovery_mod._no_tests_findings(set(), {}, "swift")
 
     assert findings == []
 
@@ -278,7 +278,7 @@ def test_no_tests_findings_capped_at_max_entries(tmp_path):
     files = set()
     graph = {}
     for i in range(60):
-        f = tmp_path / f"mod_{i}.py"
+        f = tmp_path / f"mod_{i}.swift"
         f.write_text("\n".join(f"line {j}" for j in range(20)) + "\n")
         filepath = str(f)
         files.add(filepath)
@@ -289,6 +289,6 @@ def test_no_tests_findings_capped_at_max_entries(tmp_path):
     ), patch.object(
         discovery_mod, "_is_runtime_entrypoint", return_value=False
     ):
-        findings = discovery_mod._no_tests_findings(files, graph, "python")
+        findings = discovery_mod._no_tests_findings(files, graph, "swift")
 
     assert len(findings) <= discovery_mod._MAX_NO_TESTS_ENTRIES

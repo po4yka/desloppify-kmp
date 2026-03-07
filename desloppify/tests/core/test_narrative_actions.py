@@ -34,7 +34,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         assert result == []
@@ -46,7 +46,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         assert len(result) >= 1
@@ -74,7 +74,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={"overall_gap": 5.0},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         assert any(a["type"] == "debt_review" for a in result)
@@ -86,7 +86,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={"overall_gap": 1.0},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         assert not any(a.get("type") == "debt_review" for a in result)
@@ -98,7 +98,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         if len(result) >= 2:
@@ -112,7 +112,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         sr_actions = [a for a in result if a.get("detector") == "subjective_review"]
@@ -126,7 +126,7 @@ class TestComputeActions:
                 dimension_scores={},
                 state=empty_state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         review_actions = [a for a in result if a.get("detector") == "review"]
@@ -144,7 +144,7 @@ class TestFixerHasApplicableFindings:
     def test_smells_with_matching_finding_is_applicable(self):
         state = {
             "findings": {
-                "smells::server.ts::dead_useeffect": {
+                "smells::MainScreen.kt::dead_useeffect": {
                     "status": "open",
                     "detector": "smells",
                     "detail": {"smell_id": "dead_useeffect"},
@@ -156,7 +156,7 @@ class TestFixerHasApplicableFindings:
     def test_smells_with_no_matching_finding_is_not_applicable(self):
         state = {
             "findings": {
-                "smells::server.ts::debug_tag": {
+                "smells::MainScreen.kt::debug_tag": {
                     "status": "open",
                     "detector": "smells",
                     "detail": {"smell_id": "debug_tag"},
@@ -168,7 +168,7 @@ class TestFixerHasApplicableFindings:
     def test_smells_resolved_finding_not_counted(self):
         state = {
             "findings": {
-                "smells::server.ts::dead_useeffect": {
+                "smells::MainScreen.kt::dead_useeffect": {
                     "status": "fixed",
                     "detector": "smells",
                     "detail": {"smell_id": "dead_useeffect"},
@@ -182,18 +182,18 @@ class TestFixerHasApplicableFindings:
         assert _fixer_has_applicable_findings(empty_state, "smells", "empty-if-chain") is False
 
 
-class TestSmellsActionWithNoReact:
-    """Regression tests for issue #127 — dead-useeffect suggested on non-React projects."""
+class TestSmellsActionWithNoMatchingFinding:
+    """Regression tests for issue #127 — smell fixers require matching findings."""
 
     def test_smells_with_no_useeffect_findings_gets_manual_fix(self, empty_state):
         """When smells findings exist but none are dead_useeffect, no auto-fix for it."""
         # State has a non-useeffect smell but by_detector still shows smells count
         state = dict(empty_state)
         state["findings"] = {
-            "smells::server.ts::debug_tag": {
+            "smells::MainScreen.kt::debug_tag": {
                 "status": "open",
                 "detector": "smells",
-                "file": "server.ts",
+                "file": "MainScreen.kt",
                 "detail": {"smell_id": "debug_tag"},
             }
         }
@@ -203,7 +203,7 @@ class TestSmellsActionWithNoReact:
                 dimension_scores={},
                 state=state,
                 debt={},
-                lang="typescript",
+                lang="kotlin",
             )
         )
         smells_actions = [a for a in result if a.get("detector") == "smells"]
@@ -256,31 +256,31 @@ class TestSmellsActionWithNoReact:
         )
         smells_actions = [a for a in result if a.get("detector") == "smells"]
         assert smells_actions
-        # No TypeScript-specific fixers exist anymore, so manual_fix is expected
+        # Mobile analyzers still expose selective smell fixers, so manual_fix may remain.
         for action in smells_actions:
             assert action["type"] in ("manual_fix", "auto_fix")
 
 
 class TestComputeTools:
     def test_empty(self):
-        result = _compute_tools({}, {}, "typescript", {})
+        result = _compute_tools({}, {}, None, {})
         assert "fixers" in result
         assert "move" in result
         assert "plan" in result
 
     def test_fixers_only_when_open(self):
-        result = _compute_tools({"unused": 5}, {}, "typescript", {})
+        result = _compute_tools({"unused": 5}, {}, None, {})
         assert len(result["fixers"]) >= 1
 
-    def test_no_fixers_for_python(self):
-        state = {"lang_capabilities": {"python": {"fixers": []}}}
-        result = _compute_tools({"unused": 5}, state, "python", {})
+    def test_no_fixers_for_swift(self):
+        state = {"lang_capabilities": {"swift": {"fixers": []}}}
+        result = _compute_tools({"unused": 5}, state, "swift", {})
         assert result["fixers"] == []
 
     def test_move_relevant_with_coupling(self):
-        result = _compute_tools({"coupling": 3}, {}, "typescript", {})
+        result = _compute_tools({"coupling": 3}, {}, None, {})
         assert result["move"]["relevant"] is True
 
     def test_move_not_relevant_empty(self):
-        result = _compute_tools({}, {}, "typescript", {})
+        result = _compute_tools({}, {}, None, {})
         assert result["move"]["relevant"] is False

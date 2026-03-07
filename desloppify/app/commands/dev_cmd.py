@@ -1,4 +1,4 @@
-"""Developer utilities."""
+"""Developer utilities for internal analyzer maintenance."""
 
 from __future__ import annotations
 
@@ -33,9 +33,9 @@ def cmd_dev(args: argparse.Namespace) -> None:
 def _normalize_lang_name(raw: str) -> str:
     name = raw.strip().lower().replace("-", "_")
     if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
-        raise ValueError("language name must match [a-z][a-z0-9_]*")
+        raise ValueError("analyzer name must match [a-z][a-z0-9_]*")
     if keyword.iskeyword(name):
-        raise ValueError(f"language name cannot be a Python keyword: {name}")
+        raise ValueError(f"analyzer name cannot be a Python keyword: {name}")
     return name
 
 
@@ -147,7 +147,7 @@ def _cmd_scaffold_lang(args) -> None:
     if lang_dir.exists() and not force:
         raise SystemExit(
             colorize(
-                f"Language directory already exists: {lang_dir}. Use --force to overwrite.",
+                f"Analyzer directory already exists: {lang_dir}. Use --force to overwrite.",
                 "red",
             )
         )
@@ -162,13 +162,14 @@ def _cmd_scaffold_lang(args) -> None:
 
     wired = _wire_pyproject(lang_name) if wire_pyproject else False
 
-    print(colorize(f"Scaffolded language plugin: {lang_name}", "green"))
+    print(colorize(f"Scaffolded analyzer package: {lang_name}", "green"))
     print(f"  Path: {lang_dir}")
     print(f"  Extensions: {', '.join(extensions)}")
     print(f"  Markers: {', '.join(markers) if markers else '(none)'}")
     print(f"  pyproject.toml updated: {'yes' if wired else 'no'}")
     print(
         colorize(
-            "  Next: implement real phases/commands/detectors and run pytest.", "dim"
+            "  Next: implement real mobile-focused phases/commands/detectors and run pytest.",
+            "dim",
         )
     )

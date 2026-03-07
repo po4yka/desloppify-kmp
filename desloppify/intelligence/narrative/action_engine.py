@@ -71,8 +71,8 @@ def _fixer_has_applicable_findings(
 
     The smells detector aggregates many smell types but each fixer only handles
     one sub-type (e.g. ``dead-useeffect`` only fixes ``dead_useeffect`` smells).
-    Without this check, a React-specific fixer can be suggested to projects that
-    have no React code at all, producing a confusing "Found 0 candidates" result.
+    Without this check, a smell-specific fixer can be suggested even when the
+    matching smell is absent, producing a confusing "Found 0 candidates" result.
 
     For all other detectors the fixer is considered universally applicable.
     """

@@ -434,30 +434,30 @@ class TestCreateParser:
             [
                 "dev",
                 "scaffold-lang",
-                "ruby",
+                "swift_support",
                 "--extension",
-                ".rb",
+                ".swift",
                 "--extension",
-                ".rake",
+                ".xcassets",
                 "--marker",
-                "Gemfile",
+                "Package.swift",
                 "--default-src",
-                "lib",
+                "iosApp",
                 "--force",
             ]
         )
         assert args.command == "dev"
         assert args.dev_action == "scaffold-lang"
-        assert args.name == "ruby"
-        assert args.extension == [".rb", ".rake"]
-        assert args.marker == ["Gemfile"]
-        assert args.default_src == "lib"
+        assert args.name == "swift_support"
+        assert args.extension == [".swift", ".xcassets"]
+        assert args.marker == ["Package.swift"]
+        assert args.default_src == "iosApp"
         assert args.force is True
         assert args.wire_pyproject is True
 
     def test_dev_scaffold_lang_no_wire_pyproject(self, parser):
         args = parser.parse_args(
-            ["dev", "scaffold-lang", "go", "--extension", ".go", "--no-wire-pyproject"]
+            ["dev", "scaffold-lang", "kotlin_support", "--extension", ".kt", "--no-wire-pyproject"]
         )
         assert args.wire_pyproject is False
 

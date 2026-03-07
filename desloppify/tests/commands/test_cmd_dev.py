@@ -28,10 +28,10 @@ REQUIRED_SCAFFOLD_PATHS = [
 def _args(**overrides):
     payload = {
         "dev_action": "scaffold-lang",
-        "name": "ruby",
-        "extension": [".rb"],
-        "marker": ["Gemfile"],
-        "default_src": "lib",
+        "name": "swift_support",
+        "extension": [".swift"],
+        "marker": ["Package.swift"],
+        "default_src": "iosApp",
         "force": False,
         "wire_pyproject": False,
     }
@@ -43,17 +43,22 @@ def test_scaffold_lang_creates_standard_files(tmp_path, monkeypatch):
     monkeypatch.setattr(dev_mod, "PROJECT_ROOT", tmp_path)
     dev_mod.cmd_dev(_args())
 
-    lang_dir = tmp_path / "desloppify" / "languages" / "ruby"
+    lang_dir = tmp_path / "desloppify" / "languages" / "swift_support"
     assert lang_dir.is_dir()
     for rel_path in REQUIRED_SCAFFOLD_PATHS:
         assert (lang_dir / rel_path).exists(), f"missing scaffold path: {rel_path}"
 
     init_text = (lang_dir / "__init__.py").read_text()
-    assert '@register_lang("ruby")' in init_text
+    assert '@register_lang("swift_support")' in init_text
+    assert "register_lang_hooks(" in init_text
     assert "holistic_review_dimensions=HOLISTIC_REVIEW_DIMENSIONS" in init_text
+    assert 'exclusions=["build", ".gradle", "Pods", "DerivedData", ".build"]' in init_text
 
     review_text = (lang_dir / "review.py").read_text()
     assert "HOLISTIC_REVIEW_DIMENSIONS" in review_text
+    coverage_text = (lang_dir / "test_coverage.py").read_text()
+    assert "def is_runtime_entrypoint" in coverage_text
+    assert "def is_placeholder_test" in coverage_text
 
 
 def test_scaffold_lang_requires_extension(tmp_path, monkeypatch):
@@ -64,18 +69,18 @@ def test_scaffold_lang_requires_extension(tmp_path, monkeypatch):
 
 def test_scaffold_lang_rejects_invalid_name(tmp_path, monkeypatch):
     monkeypatch.setattr(dev_mod, "PROJECT_ROOT", tmp_path)
-    with pytest.raises(SystemExit, match="language name must match"):
-        dev_mod.cmd_dev(_args(name="123ruby"))
+    with pytest.raises(SystemExit, match="analyzer name must match"):
+        dev_mod.cmd_dev(_args(name="123swift"))
 
 
 def test_scaffold_lang_force_overwrites(tmp_path, monkeypatch):
     monkeypatch.setattr(dev_mod, "PROJECT_ROOT", tmp_path)
     dev_mod.cmd_dev(_args())
 
-    target = tmp_path / "desloppify" / "languages" / "ruby" / "commands.py"
+    target = tmp_path / "desloppify" / "languages" / "swift_support" / "commands.py"
     target.write_text("SENTINEL\n")
 
-    with pytest.raises(SystemExit, match="Language directory already exists"):
+    with pytest.raises(SystemExit, match="Analyzer directory already exists"):
         dev_mod.cmd_dev(_args())
     assert target.read_text() == "SENTINEL\n"
 
@@ -97,10 +102,10 @@ def test_scaffold_lang_wires_pyproject_once(tmp_path, monkeypatch):
 
     dev_mod.cmd_dev(_args(wire_pyproject=True))
     first = pyproject.read_text()
-    assert "desloppify.languages.ruby.tests*" not in first
-    assert "desloppify/languages/ruby/tests" in first
+    assert "desloppify.languages.swift_support.tests*" not in first
+    assert "desloppify/languages/swift_support/tests" in first
 
     dev_mod.cmd_dev(_args(force=True, wire_pyproject=True))
     second = pyproject.read_text()
-    assert second.count("desloppify.languages.ruby.tests*") == 0
-    assert second.count("desloppify/languages/ruby/tests") == 1
+    assert second.count("desloppify.languages.swift_support.tests*") == 0
+    assert second.count("desloppify/languages/swift_support/tests") == 1

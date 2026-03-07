@@ -75,9 +75,14 @@ def test_ci_workflow_has_expected_triggers() -> None:
     assert on_block.get("push", {}).get("branches") == ["main"]
 
 
-@pytest.mark.skip(reason="Roslyn integration removed — C# plugin no longer exists")
-def test_integration_workflow_uses_deterministic_roslyn_path() -> None:
-    pass
+def test_removed_roslyn_integration_lane_has_no_stale_ci_contracts() -> None:
+    assert not INTEGRATION_WORKFLOW.exists()
+
+    doc = CI_PLAN.read_text()
+    assert "integration.yml" not in doc
+    assert "integration-roslyn" not in doc
+    assert "make integration-roslyn" not in doc
+    assert "roslyn_stub.py" not in doc
 
 
 def test_publish_workflow_keeps_release_safety_gates() -> None:

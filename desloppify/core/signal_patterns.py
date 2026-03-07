@@ -1,4 +1,4 @@
-"""Shared regex policies for migration/auth signal detection."""
+"""Shared regex policies for migration and privileged-auth signal detection."""
 
 from __future__ import annotations
 
@@ -21,13 +21,13 @@ SERVER_ONLY_PATH_HINTS = (
     "/server/",
     "/backend/",
     "/functions/",
-    "/supabase/functions/",
+    "/fastlane/",
     "/scripts/",
 )
 
 
 def is_server_only_path(path: str) -> bool:
-    """Best-effort classification for server-only source paths."""
+    """Best-effort classification for server or delivery-automation paths."""
     if not path:
         return False
     normalized = path.replace("\\", "/")

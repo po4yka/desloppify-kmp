@@ -1995,7 +1995,7 @@ class TestNewInvestigationBatches:
                         "without_auth": 3,
                     },
                 },
-                "service_role_usage": ["lib/supabase.ts"],
+                "service_role_usage": ["androidApp/src/main/kotlin/AdminClient.kt"],
             },
         }
         lang = _mock_lang()
@@ -2006,7 +2006,7 @@ class TestNewInvestigationBatches:
         assert "Authorization" in names
         auth_batch = next(b for b in batches if b["name"] == "Authorization")
         assert "routes/admin.py" in auth_batch["files_to_read"]
-        assert "lib/supabase.ts" in auth_batch["files_to_read"]
+        assert "androidApp/src/main/kotlin/AdminClient.kt" in auth_batch["files_to_read"]
         assert "authorization_consistency" in auth_batch["dimensions"]
 
     def test_ai_debt_migration_batch_generated(self):

@@ -20,6 +20,14 @@ def _load_lang_test_coverage_module(lang_name: str | None):
     return get_lang_hook(lang_name, "test_coverage") or object()
 
 
+def _call_has_logic_hook(hook, filepath: str, content: str) -> bool:
+    """Call legacy or current has_testable_logic hooks safely."""
+    try:
+        return bool(hook(filepath, content))
+    except TypeError:
+        return bool(hook(content))
+
+
 def _infer_lang_name(test_files: set[str], production_files: set[str]) -> str | None:
     """Infer language from known file extensions when explicit lang is unavailable."""
     paths = list(test_files) + list(production_files)
@@ -79,10 +87,8 @@ def _import_based_mapping(
                     graph_mapped.add(imp)
             tested |= graph_mapped
 
-        # Parse source imports as a supplement when graph imports are absent,
-        # or always for TypeScript where dynamic import('...') is common in
-        # coverage smoke tests and may be missed by static graph building.
-        if not graph_mapped or lang_name == "typescript":
+        # Parse source imports as a supplement when graph imports are absent.
+        if not graph_mapped:
             tested |= _parse_test_imports(
                 tf, production_files, prod_by_module, lang_name
             )
@@ -110,7 +116,7 @@ def _import_based_mapping(
             if not read_result.ok:
                 continue
             content = read_result.content
-            if not has_logic(f, content):
+            if not _call_has_logic_hook(has_logic, f, content):
                 for imp in entry.get("imports", set()):
                     if imp in production_files:
                         facade_targets.add(imp)
@@ -128,7 +134,10 @@ def _resolve_import(
     mod = _load_lang_test_coverage_module(lang_name)
     resolver = getattr(mod, "resolve_import_spec", None)
     if callable(resolver):
-        return resolver(spec, test_path, production_files)
+        try:
+            return resolver(spec, test_path, production_files)
+        except TypeError:
+            return resolver(spec)
     return None
 
 
@@ -143,7 +152,11 @@ def _resolve_barrel_reexports(
     mod = _load_lang_test_coverage_module(lang_name)
     resolver = getattr(mod, "resolve_barrel_reexports", None)
     if callable(resolver):
-        return resolver(filepath, production_files)
+        try:
+            resolved = resolver(filepath, production_files)
+        except TypeError:
+            resolved = resolver(filepath)
+        return set(resolved or ())
     return set()
 
 

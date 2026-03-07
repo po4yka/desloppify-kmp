@@ -26,44 +26,44 @@ def test_make_lang_config_wraps_constructor_errors():
 
 def test_get_lang_uses_registry_and_reports_unknown(monkeypatch):
     sentinel_cls = object()
-    monkeypatch.setattr(registry_state, "_registry", {"python": sentinel_cls})
+    monkeypatch.setattr(registry_state, "_registry", {"kotlin": sentinel_cls})
     monkeypatch.setattr(lang_resolution_mod, "load_all", lambda: None)
     monkeypatch.setattr(
         lang_resolution_mod, "make_lang_config", lambda name, cfg_cls: (name, cfg_cls)
     )
 
-    resolved = lang_resolution_mod.get_lang("python")
-    assert resolved == ("python", sentinel_cls)
-    assert resolved[0] == "python"
+    resolved = lang_resolution_mod.get_lang("kotlin")
+    assert resolved == ("kotlin", sentinel_cls)
+    assert resolved[0] == "kotlin"
     assert resolved[1] is sentinel_cls
-    assert registry_state.is_registered("python")
+    assert registry_state.is_registered("kotlin")
 
     with pytest.raises(ValueError, match="Unknown language") as exc:
         lang_resolution_mod.get_lang("missing")
-    assert "Available: python" in str(exc.value)
+    assert "Available: kotlin" in str(exc.value)
 
 
 def test_auto_detect_lang_prefers_marker_candidates_with_most_sources(
     monkeypatch, tmp_path
 ):
-    (tmp_path / "pyproject.toml").write_text("[project]\nname='x'\n")
-    (tmp_path / "package.json").write_text("{}\n")
+    (tmp_path / "build.gradle.kts").write_text("plugins {}\n")
+    (tmp_path / "Package.swift").write_text("// swift-tools-version: 6.0\n")
 
     monkeypatch.setattr(
         registry_state,
         "_registry",
-        {"python": object(), "typescript": object()},
+        {"kotlin": object(), "swift": object()},
     )
     monkeypatch.setattr(lang_resolution_mod, "load_all", lambda: None)
 
     cfg_by_name = {
-        "python": SimpleNamespace(
-            detect_markers=["pyproject.toml"],
-            file_finder=lambda _root: ["a.py", "b.py", "c.py"],
+        "kotlin": SimpleNamespace(
+            detect_markers=["build.gradle.kts"],
+            file_finder=lambda _root: ["App.kt", "SharedApp.kt", "Platform.kt"],
         ),
-        "typescript": SimpleNamespace(
-            detect_markers=["package.json"],
-            file_finder=lambda _root: ["a.ts"],
+        "swift": SimpleNamespace(
+            detect_markers=["Package.swift"],
+            file_finder=lambda _root: ["App.swift"],
         ),
     }
     monkeypatch.setattr(
@@ -73,27 +73,27 @@ def test_auto_detect_lang_prefers_marker_candidates_with_most_sources(
     )
 
     detected = lang_resolution_mod.auto_detect_lang(tmp_path)
-    assert detected == "python"
-    assert "python" in cfg_by_name
-    assert "typescript" in cfg_by_name
-    assert (tmp_path / "pyproject.toml").exists()
-    assert (tmp_path / "package.json").exists()
+    assert detected == "kotlin"
+    assert "kotlin" in cfg_by_name
+    assert "swift" in cfg_by_name
+    assert (tmp_path / "build.gradle.kts").exists()
+    assert (tmp_path / "Package.swift").exists()
 
 
 def test_auto_detect_lang_markerless_fallback(monkeypatch, tmp_path):
     monkeypatch.setattr(
         registry_state,
         "_registry",
-        {"python": object(), "typescript": object()},
+        {"kotlin": object(), "swift": object()},
     )
     monkeypatch.setattr(lang_resolution_mod, "load_all", lambda: None)
 
     cfg_by_name = {
-        "python": SimpleNamespace(
-            detect_markers=[], file_finder=lambda _root: ["a.py"]
+        "kotlin": SimpleNamespace(
+            detect_markers=[], file_finder=lambda _root: ["App.kt"]
         ),
-        "typescript": SimpleNamespace(
-            detect_markers=[], file_finder=lambda _root: ["a.ts", "b.ts"]
+        "swift": SimpleNamespace(
+            detect_markers=[], file_finder=lambda _root: ["App.swift", "Scene.swift"]
         ),
     }
     monkeypatch.setattr(
@@ -103,30 +103,30 @@ def test_auto_detect_lang_markerless_fallback(monkeypatch, tmp_path):
     )
 
     detected = lang_resolution_mod.auto_detect_lang(tmp_path)
-    assert detected == "typescript"
-    assert len(cfg_by_name["python"].file_finder(tmp_path)) == 1
-    assert len(cfg_by_name["typescript"].file_finder(tmp_path)) == 2
+    assert detected == "swift"
+    assert len(cfg_by_name["kotlin"].file_finder(tmp_path)) == 1
+    assert len(cfg_by_name["swift"].file_finder(tmp_path)) == 2
 
 
 def test_auto_detect_lang_supports_glob_markers(monkeypatch, tmp_path):
-    (tmp_path / "sample.fsproj").write_text("<Project></Project>\n")
-    (tmp_path / "package.json").write_text("{}\n")
+    (tmp_path / "Desloppify.podspec").write_text("Pod::Spec.new do |s| end\n")
+    (tmp_path / "build.gradle.kts").write_text("plugins {}\n")
 
     monkeypatch.setattr(
         registry_state,
         "_registry",
-        {"fsharp": object(), "typescript": object()},
+        {"swift": object(), "kotlin": object()},
     )
     monkeypatch.setattr(lang_resolution_mod, "load_all", lambda: None)
 
     cfg_by_name = {
-        "fsharp": SimpleNamespace(
-            detect_markers=["*.fsproj"],
-            file_finder=lambda _root: ["Program.fs", "Helpers.fs"],
+        "swift": SimpleNamespace(
+            detect_markers=["*.podspec"],
+            file_finder=lambda _root: ["App.swift", "SceneDelegate.swift"],
         ),
-        "typescript": SimpleNamespace(
-            detect_markers=["package.json"],
-            file_finder=lambda _root: ["index.ts"],
+        "kotlin": SimpleNamespace(
+            detect_markers=["build.gradle.kts"],
+            file_finder=lambda _root: ["MainActivity.kt"],
         ),
     }
     monkeypatch.setattr(
@@ -136,15 +136,15 @@ def test_auto_detect_lang_supports_glob_markers(monkeypatch, tmp_path):
     )
 
     detected = lang_resolution_mod.auto_detect_lang(tmp_path)
-    assert detected == "fsharp"
+    assert detected == "swift"
 
 
 def test_available_langs_returns_sorted_list(monkeypatch):
     monkeypatch.setattr(
-        registry_state, "_registry", {"zeta": object(), "alpha": object()}
+        registry_state, "_registry", {"swift": object(), "kotlin": object()}
     )
     monkeypatch.setattr(lang_resolution_mod, "load_all", lambda: None)
 
     langs = lang_resolution_mod.available_langs()
-    assert langs == ["alpha", "zeta"]
+    assert langs == ["kotlin", "swift"]
     assert langs[0] < langs[1]

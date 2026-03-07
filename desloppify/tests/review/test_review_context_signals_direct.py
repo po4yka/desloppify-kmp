@@ -37,7 +37,9 @@ def test_gather_auth_context_collects_route_rls_and_service_role():
             "CREATE TABLE accounts(id int);\n"
             "ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;\n"
         ),
-        "client.ts": "const k = service_role; createClient(url, key)",
+        "androidApp/src/main/kotlin/AdminClient.kt": (
+            "val admin = createClient(url, service_role)"
+        ),
     }
     result = signal_auth_mod.gather_auth_context(file_contents, rel_fn=lambda p: p)
     assert "route_auth_coverage" in result
@@ -46,7 +48,7 @@ def test_gather_auth_context_collects_route_rls_and_service_role():
     assert result["route_auth_coverage"]["api.py"]["without_auth"] == 1
     assert "rls_coverage" in result
     assert result["rls_coverage"]["with_rls"] == ["accounts"]
-    assert result["service_role_usage"] == ["client.ts"]
+    assert result["service_role_usage"] == ["androidApp/src/main/kotlin/AdminClient.kt"]
     assert result["auth_patterns"]["api.py"] >= 1
     assert "auth_guard_patterns" not in result
     assert result["auth_usage_patterns"]["api.py"] >= 1
@@ -54,7 +56,7 @@ def test_gather_auth_context_collects_route_rls_and_service_role():
 
 def test_gather_auth_context_excludes_server_only_service_role_paths():
     file_contents = {
-        "functions/worker.ts": "const k = service_role; createClient(url, k)",
+        "fastlane/Fastfile": "service_role\ncreateClient(url, key)\n",
     }
     result = signal_auth_mod.gather_auth_context(file_contents, rel_fn=lambda p: p)
     assert "service_role_usage" not in result

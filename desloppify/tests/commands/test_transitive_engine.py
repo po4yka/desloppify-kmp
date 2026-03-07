@@ -586,8 +586,8 @@ class TestDevParser:
         sub = parser.add_subparsers(dest="command")
         parser_admin_mod._add_dev_parser(sub)
 
-        args = parser.parse_args(["dev", "scaffold-lang", "go"])
-        assert args.name == "go"
+        args = parser.parse_args(["dev", "scaffold-lang", "swift_support"])
+        assert args.name == "swift_support"
         assert args.default_src == "src"
         assert args.force is False
         assert args.wire_pyproject is True
@@ -600,17 +600,17 @@ class TestDevParser:
         parser_admin_mod._add_dev_parser(sub)
 
         args = parser.parse_args([
-            "dev", "scaffold-lang", "go",
-            "--extension", ".go",
-            "--extension", ".gomod",
-            "--marker", "go.mod",
-            "--default-src", ".",
+            "dev", "scaffold-lang", "swift_support",
+            "--extension", ".swift",
+            "--extension", ".plist",
+            "--marker", "Package.swift",
+            "--default-src", "iosApp",
             "--force",
             "--no-wire-pyproject",
         ])
-        assert args.extension == [".go", ".gomod"]
-        assert args.marker == ["go.mod"]
-        assert args.default_src == "."
+        assert args.extension == [".swift", ".plist"]
+        assert args.marker == ["Package.swift"]
+        assert args.default_src == "iosApp"
         assert args.force is True
         assert args.wire_pyproject is False
 
